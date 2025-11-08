@@ -1,0 +1,29 @@
+services:
+  transactions:
+    build: .
+    container_name: transactions_service
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: mysql+pymysql://root:abhishekCOMM3033@localhost:3306/transactions_db
+      JWT_SECRET: supersecretkey
+    depends_on:
+      - db
+    restart: unless-stopped
+
+  db:
+    image: mysql:8.0
+    container_name: transactions_db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: transactions
+      MYSQL_USER: user
+      MYSQL_PASSWORD: pass
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+volumes:
+  mysql_data:
