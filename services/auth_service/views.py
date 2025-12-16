@@ -8,6 +8,18 @@ auth_api = Blueprint('auth_api', __name__)
 def health():
     return jsonify(service="auth", status="ok")
 
+@auth_api.get("/users/<int:user_id>")
+def get_user(user_id):
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify(error="User not found"), 404
+
+    return jsonify(
+        id=user.id,
+        firstname=user.firstname,
+        lastname=user.lastname,
+        email=user.email
+    ), 200
 
 @auth_api.post("/register")
 def register():
@@ -54,6 +66,3 @@ def login():
     return jsonify(message="Login OK", user_id=user.id), 200
 
 
-@auth_api.post("/forgot-password")
-def forgot_password():
-    return jsonify(message="forgot-password stub")
