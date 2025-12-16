@@ -1,2 +1,10 @@
 flask
 requests
+python-dotenv
+flask_sqlalchemy
+pymysql
+WTForms
+Flask-WTF
+email_validator
+bcrypt
+flask_login
