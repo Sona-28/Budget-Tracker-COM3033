@@ -5,6 +5,8 @@ db = SQLAlchemy()
 class Category(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False, unique=True)
+    budget_amount = db.Column(db.Numeric(10, 2), nullable=True)
 
     def __repr__(self):
-        return f"<Category {self.name}>"
+        return f"<Category {self.name} - Budget: {self.budget_amount}>"
+
