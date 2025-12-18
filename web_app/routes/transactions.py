@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template
-from web_app.routes.utils import require_login
+from routes.utils import require_login
 
 transaction_blueprint = Blueprint('transaction', __name__, template_folder='../templates')
 

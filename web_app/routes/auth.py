@@ -1,8 +1,7 @@
 import os
-
 import requests
-from flask import Blueprint, render_template, redirect, session, url_for, flash
-from web_app.forms.auth_forms import RegisterForm, LoginForm
+from flask import Blueprint, render_template, redirect, request, session, url_for, flash
+from forms.auth_forms import RegisterForm, LoginForm, ProfileForm, ChangePasswordForm
 
 auth_blueprint = Blueprint('auth', __name__, template_folder='../templates')
 
@@ -97,6 +96,97 @@ def logout():
     return redirect(url_for('main.main'))
 
 
-@auth_blueprint.route('/account')
+@auth_blueprint.route('/account', methods=["GET", "POST"])
 def account():
-    return render_template('auth/account.html')
+    user_id = session.get("user_id")
+    if not user_id:
+        flash("Please log in first.", "warning")
+        return redirect(url_for("auth.login"))
+
+    form = ProfileForm()
+    password_form = ChangePasswordForm()
+
+    try:
+        resp = requests.get(f"{AUTH_SERVICE_URL}/users/{user_id}", timeout=5)
+        resp.raise_for_status()
+        user = resp.json()["user"]
+    except requests.RequestException:
+        flash("Could not fetch profile info.", "danger")
+        return redirect(url_for("auth.login"))
+
+    user_email = user.get("email")
+
+    if request.method == "GET":
+        print("In GET method")
+        form.firstname.data = user.get("firstname")
+        form.lastname.data = user.get("lastname")
+        form.phone.data = user.get("phone")
+
+    if form.validate_on_submit():
+        print("In POST method")
+        payload = {
+            "firstname": form.firstname.data,
+            "lastname": form.lastname.data,
+            "phone": form.phone.data
+        }
+        try:
+            update_resp = requests.put(
+                f"{AUTH_SERVICE_URL}/users/{user_id}",
+                json=payload,
+                timeout=5
+            )
+            update_resp.raise_for_status()
+        except requests.RequestException:
+            flash("Failed to update profile. Please try again.", "danger")
+            return render_template(
+                "auth/account.html",
+                form=form,
+                user_email=user_email,
+                password_form=password_form
+            )
+
+        flash("Profile updated successfully!", "success")
+
+        form.firstname.data = payload["firstname"]
+        form.lastname.data = payload["lastname"]
+        form.phone.data = payload["phone"]
+
+    return render_template(
+        "auth/account.html",
+        form=form,
+        user_email=user_email,
+        password_form=password_form
+    )
+
+@auth_blueprint.route('/change_password', methods=["POST"])
+def change_password():
+    user_id = session.get("user_id")
+    if not user_id:
+        flash("Please log in first.", "warning")
+        return redirect(url_for("auth.login"))
+
+    form = ChangePasswordForm()
+
+    if not form.validate_on_submit():
+        flash("Invalid password input.", "danger")
+        return redirect(url_for("auth.account"))
+
+    payload = {
+        "user_id": user_id,
+        "current_password": form.current_password.data,
+        "new_password": form.new_password.data,
+    }
+
+    try:
+        resp = requests.post(
+            f"{AUTH_SERVICE_URL}/change-password",
+            json=payload,
+            timeout=5
+        )
+        resp.raise_for_status()
+    except requests.RequestException:
+        flash("Password update failed.", "danger")
+        return redirect(url_for("auth.account"))
+
+    flash("Password updated successfully.", "success")
+    return redirect(url_for("auth.account"))

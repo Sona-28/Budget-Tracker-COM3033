@@ -1,7 +1,160 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    
-    <h1 class="title is-1">Account</h1>
+<section class="section">
+  <div class="container">
+
+    <h1 class="title is-1 has-text-centered mb-6">Profile</h1>
+
+    <div class="columns is-variable is-8">
+
+      <div class="column is-4">
+        <div class="card">
+          <div class="card-content has-text-centered">
+            <figure class="image is-128x128 is-inline-block mb-3">
+              <img class="is-rounded" src="{{ url_for('static', filename='img/default-avatar.png') }}" alt="Profile picture">
+            </figure>
+            <p class="subtitle is-6 has-text-black">{{ form.firstname.data }} {{ form.lastname.data }}</p>
+            <p class="subtitle is-6 has-text-black">{{ user_email }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Account Details Column -->
+      <div class="column is-8">
+        <div class="card">
+          <div class="card-content">
+
+            <h3 class="title is-4 mb-4">Account Details</h3>
+
+            <form method="POST" id="profile-form">
+
+              {{ form.hidden_tag() }}
+
+              <div class="field">
+                <label class="label">First Name</label>
+                <div class="control">
+                  {{ form.firstname(class="input", readonly=True) }}
+                </div>
+                {% for err in form.firstname.errors %}
+                  <p class="help is-danger">{{ err }}</p>
+                {% endfor %}
+              </div>
+
+              <div class="field">
+                <label class="label">Last Name</label>
+                <div class="control">
+                  {{ form.lastname(class="input", readonly=True) }}
+                </div>
+                {% for err in form.lastname.errors %}
+                  <p class="help is-danger">{{ err }}</p>
+                {% endfor %}
+              </div>
+
+              <div class="field">
+                <label class="label">Phone</label>
+                <div class="control">
+                  {{ form.phone(class="input", readonly=True) }}
+                </div>
+                {% for err in form.phone.errors %}
+                  <p class="help is-danger">{{ err }}</p>
+                {% endfor %}
+              </div>
+
+              <div class="field is-grouped mt-4">
+                <div class="control">
+                  <button type="button" id="edit-btn" class="button is-primary">
+                    Edit Profile
+                  </button>
+                </div>
+                <div class="control">
+                  {{ form.submit(id="update-btn", class="button is-success", style="display:none;") }}
+                </div>
+              </div>
+
+            </form>
+
+          </div>
+        </div>
+      </div>
+
+    </div> <!-- end columns -->
+
+    <!-- Change Password Section -->
+    <div class="section mt-6">
+      <div class="card">
+        <div class="card-content">
+
+          <h3 class="title is-4 mb-4 has-text-black">Change Password</h3>
+
+          <form method="POST" action="{{ url_for('auth.change_password') }}">
+
+            {{ password_form.hidden_tag() }}
+
+            <div class="field">
+              <label class="label">Current Password</label>
+              <div class="control">
+                {{ password_form.current_password(class="input", placeholder="Current password") }}
+              </div>
+              {% for err in password_form.current_password.errors %}
+                <p class="help is-danger">{{ err }}</p>
+              {% endfor %}
+            </div>
+
+            <div class="field">
+              <label class="label">New Password</label>
+              <div class="control">
+                {{ password_form.new_password(class="input", placeholder="New password") }}
+              </div>
+              {% for err in password_form.new_password.errors %}
+                <p class="help is-danger">{{ err }}</p>
+              {% endfor %}
+            </div>
+
+            <div class="field">
+              <label class="label">Confirm New Password</label>
+              <div class="control">
+                {{ password_form.confirm_password(class="input", placeholder="Confirm new password") }}
+              </div>
+              {% for err in password_form.confirm_password.errors %}
+                <p class="help is-danger">{{ err }}</p>
+              {% endfor %}
+            </div>
+
+            <div class="field mt-4">
+              <div class="control">
+                {{ password_form.submit(class="button is-danger") }}
+              </div>
+            </div>
+
+          </form>
+
+        </div>
+      </div>
+    </div>
+
+  </div> <!-- end container -->
+</section>
+
+<!-- JS to enable edit mode -->
+<script>
+const editBtn = document.getElementById('edit-btn');
+const updateBtn = document.getElementById('update-btn');
+const inputs = document.querySelectorAll('#profile-form input[type="text"]');
+
+function enableEditMode() {
+    inputs.forEach(input => input.removeAttribute('readonly'));
+    editBtn.style.display = 'none';
+    updateBtn.style.display = 'inline-block';
+}
+
+editBtn.addEventListener('click', enableEditMode);
+</script>
+{% if form.errors %}
+<script>
+enableEditMode();
+</script>
+{% endif %}
+
 
 {% endblock %}

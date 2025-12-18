@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, PasswordField
-from wtforms.validators import DataRequired, Email, Length, EqualTo, ValidationError, Optional
+from wtforms.validators import DataRequired, Email, Length, EqualTo, ValidationError, Optional, InputRequired
 import re
 
 
@@ -42,3 +42,16 @@ class LoginForm(FlaskForm):
     email = StringField(validators=[DataRequired(), Email()])
     password = PasswordField(validators=[DataRequired()])
     submit = SubmitField()
+
+# Validating the user profile edit form
+class ProfileForm(FlaskForm):
+    firstname = StringField(validators=[InputRequired(), character_check])
+    lastname = StringField(validators=[InputRequired(), character_check])
+    phone = StringField(validators=[Optional(), validate_phone])
+    submit = SubmitField("Update")
+
+class ChangePasswordForm(FlaskForm):
+    current_password = PasswordField(validators=[DataRequired()])
+    new_password = PasswordField(validators=[DataRequired(), Length(min=6, max=12), validate_pass])
+    confirm_password = PasswordField(validators=[DataRequired(), EqualTo('new_password', message='Both password fields must match')])
+    submit = SubmitField("Change Password")
