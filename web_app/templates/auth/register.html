@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<form method="POST">
+    {{ form.hidden_tag() }}
+    {{ form.firstname(class="input", placeholder="First name") }}
+    {{ form.lastname(class="input", placeholder="Last name") }}
+    {{ form.email(class="input", placeholder="Email") }}
+    {{ form.phone(class="input", placeholder="Phone (optional)") }}
+    {{ form.phone.errors }}
+    {{ form.password(class="input", placeholder="Password") }}
+    {{ form.password.errors }}
+    {{ form.confirm_password(class="input", placeholder="Confirm Password") }}
+    {{ form.submit(class="button") }}
+</form>
+
+{% endblock %}
