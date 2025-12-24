@@ -1,7 +1,8 @@
 import os
 
 class Config:
-    # Update username, password, host, db name
-    SQLALCHEMY_DATABASE_URI = "mysql://root:password@localhost/categoriesdb"
+    SECRET_KEY = os.getenv("SECRET_KEY")
+    SQLALCHEMY_DATABASE_URI = os.getenv("CATEGORY_DATABASE_URI")
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    SECRET_KEY = "dev_secret_key"
+    SQLALCHEMY_ECHO = True
+
