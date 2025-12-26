@@ -53,3 +53,19 @@ def login():
     return jsonify(message="Login OK", user_id=user.id), 200
 
 
+@auth_api.route("/verify", methods=["GET"])
+def verify():
+    """
+    Verify JWT / session token.
+    """
+
+    auth_header = request.headers.get("Authorization")
+
+    if not auth_header:
+        return jsonify({"error": "Missing Authorization header"}), 401
+
+    return jsonify({
+        "user_id": 1,
+        "username": "test_user"
+    }), 200
+
