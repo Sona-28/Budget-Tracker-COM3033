@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request
-from services.auth_service.extensions import db
-from services.auth_service.models import User
+from extensions import db
+from models import User
 
 auth_api = Blueprint('auth_api', __name__)
 

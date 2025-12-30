@@ -4,7 +4,6 @@ from models import Category
 import os
 import requests
 
-
 # -----------------------------------
 # Auth service configuration
 # -----------------------------------
@@ -78,7 +77,33 @@ def create_app():
         }), 201
 
     # -----------------------------------
-    # Get all categories for a user
+    # Get all categories (Web App version)
+    # -----------------------------------
+    @app.route("/categories", methods=["GET"])
+    def get_categories_from_query():
+        user_id = request.args.get("user_id", type=int)
+
+        if not user_id:
+            return jsonify({"error": "user_id required"}), 400
+
+        if not validate_user(user_id):
+            return jsonify({"error": "Invalid user"}), 401
+
+        categories = Category.query.filter_by(user_id=user_id).all()
+
+        return jsonify([
+            {
+                "id": c.id,
+                "user_id": c.user_id,
+                "name": c.name,
+                "budget_amount": float(c.budget_amount)
+                if c.budget_amount else None
+            }
+            for c in categories
+        ]), 200
+
+    # -----------------------------------
+    # Get all categories for a user (API version)
     # -----------------------------------
     @app.route("/categories/<int:user_id>", methods=["GET"])
     def get_categories(user_id):
@@ -99,7 +124,7 @@ def create_app():
         ]), 200
 
     # -----------------------------------
-    # Get a single category (Transactions use-case)
+    # Get a single category
     # -----------------------------------
     @app.route("/categories/<int:user_id>/<int:category_id>", methods=["GET"])
     def get_category(user_id, category_id):
@@ -153,7 +178,6 @@ def create_app():
                 user_id=user_id,
                 name=name
             ).first()
-
             if not exists:
                 category = Category(
                     user_id=user_id,

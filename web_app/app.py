@@ -1,16 +1,16 @@
 import os
 from flask import Flask
 from dotenv import load_dotenv
-from routes.main import main_blueprint
-from routes.auth import auth_blueprint
-from routes.transactions import transaction_blueprint
-from routes.categories import category_blueprint
-from routes.analytics import analytics_blueprint
+from web_app.routes.main import main_blueprint
+from web_app.routes.auth import auth_blueprint
+from web_app.routes.transactions import transaction_blueprint
+from web_app.routes.category import category_blueprint
+from web_app.routes.analytics import analytics_blueprint
 
 load_dotenv()
 
 app = Flask(__name__, template_folder='templates', static_folder='static')
-app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
+app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "dev-secret-key")
 
 app.register_blueprint(main_blueprint)
 app.register_blueprint(auth_blueprint)

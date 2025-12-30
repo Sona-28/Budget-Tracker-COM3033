@@ -1,7 +1,40 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    
-    <h1 class="title is-1">category</h1>
+
+<h1 class="title is-1">Categories</h1>
+
+{% if categories %}
+<table class="table is-striped is-hoverable">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Monthly Budget</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for category in categories %}
+        <tr>
+            <td>{{ category.name }}</td>
+            <td>
+                {% if category.budget_amount %}
+                    £{{ "%.2f"|format(category.budget_amount) }}
+                {% else %}
+                    —
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>No categories created yet.</p>
+{% endif %}
+
+<a href="{{ url_for('category.create_category') }}"
+   class="button is-primary">
+    Add Category
+</a>
 
 {% endblock %}
+
