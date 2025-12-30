@@ -25,30 +25,17 @@
             <div class="container">
                 <div id="navbarMenuHeroA" class="navbar-menu">
                     <div class="navbar-end">
-                        <a href="{{ url_for('main.main') }}" class="navbar-item">
-                            Main
-                        </a>
-                        <a href="{{ url_for('transaction.transaction') }}" class="navbar-item">
-                            Transaction
-                        </a>
-                        <a href="{{ url_for('auth.register') }}" class="navbar-item">
-                            Register
-                        </a>
-                        <a href="{{ url_for('auth.login') }}" class="navbar-item">
-                            Login
-                        </a>
-                        <a href="{{ url_for('auth.account') }}" class="navbar-item">
-                            Account
-                        </a>
-                        <a href="{{ url_for('category.category') }}" class="navbar-item">
-                            Category
-                        </a>
-                        <a href="{{ url_for('analytics.analytics') }}" class="navbar-item">
-                            Analytics
-                        </a>
-                        <a href="" class="navbar-item">
-                            Log out
-                        </a>
+                        {% if session.get('user_id') %}
+                            <a href="{{ url_for('transaction.transaction') }}" class="navbar-item">Transaction</a>
+                            <a href="{{ url_for('category.category') }}" class="navbar-item">Category</a>
+                            <a href="{{ url_for('analytics.analytics') }}" class="navbar-item">Analytics</a>
+                            <a href="{{ url_for('auth.account') }}" class="navbar-item">Account</a>
+                            <a href="{{ url_for('auth.logout') }}" class="navbar-item">Log out</a>
+                        {% else %}
+                            <a href="{{ url_for('auth.register') }}" class="navbar-item">Register</a>
+                            <a href="{{ url_for('auth.login') }}" class="navbar-item">Login</a>
+                        {% endif %}
+                        <a href="{{ url_for('main.main') }}" class="navbar-item">Main</a>
                     </div>
                 </div>
             </div>
@@ -57,6 +44,15 @@
 
     <div class="hero-body">
         <div class="container has-text-centered">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+              {% if messages %}
+                <div class="section">
+                  {% for category, message in messages %}
+                    <div class="notification is-{{ category }}">{{ message }}</div>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            {% endwith %}
             {% block content %}
             {% endblock %}
         </div>
