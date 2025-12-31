@@ -2,25 +2,34 @@ from flask import Flask, request, jsonify
 from extensions import db
 from models import Category
 import os
-import requests
+import jwt
 
 # -----------------------------------
-# Auth service configuration
+# JWT configuration (shared with auth service)
 # -----------------------------------
-AUTH_SERVICE_URL = os.getenv("AUTH_SERVICE_URL", "http://localhost:5001")
+JWT_SECRET = os.getenv("JWT_SECRET", "super-secret-key")
+JWT_ALGORITHM = "HS256"
 
 
-def validate_user(user_id: int) -> bool:
+def get_user_id_from_jwt(req):
     """
-    Validate user existence via Auth service.
-    For coursework purposes, we validate by ensuring
-    the Auth service is reachable.
+    Extract and validate JWT from Authorization header.
+    Returns user_id if valid, otherwise None.
     """
+    auth_header = req.headers.get("Authorization")
+
+    if not auth_header or not auth_header.startswith("Bearer "):
+        return None
+
+    token = auth_header.split(" ")[1]
+
     try:
-        resp = requests.get(f"{AUTH_SERVICE_URL}/health", timeout=3)
-        return resp.status_code == 200
-    except requests.RequestException:
-        return False
+        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        return payload.get("user_id")
+    except jwt.ExpiredSignatureError:
+        return None
+    except jwt.InvalidTokenError:
+        return None
 
 
 def create_app():
@@ -51,16 +60,16 @@ def create_app():
     # -----------------------------------
     @app.route("/categories", methods=["POST"])
     def create_category():
-        data = request.get_json()
+        user_id = get_user_id_from_jwt(request)
+        if not user_id:
+            return jsonify({"error": "Unauthorized"}), 401
 
-        if not data or "user_id" not in data or "name" not in data:
+        data = request.get_json()
+        if not data or "name" not in data:
             return jsonify({"error": "Missing required fields"}), 400
 
-        if not validate_user(data["user_id"]):
-            return jsonify({"error": "Invalid user"}), 401
-
         category = Category(
-            user_id=data["user_id"],
+            user_id=user_id,
             name=data["name"],
             budget_amount=data.get("budget_amount")
         )
@@ -73,21 +82,17 @@ def create_app():
             "user_id": category.user_id,
             "name": category.name,
             "budget_amount": float(category.budget_amount)
-            if category.budget_amount else None
+            if category.budget_amount is not None else None
         }), 201
 
     # -----------------------------------
-    # Get all categories (Web App version)
+    # Get all categories for logged-in user
     # -----------------------------------
     @app.route("/categories", methods=["GET"])
-    def get_categories_from_query():
-        user_id = request.args.get("user_id", type=int)
-
+    def get_categories():
+        user_id = get_user_id_from_jwt(request)
         if not user_id:
-            return jsonify({"error": "user_id required"}), 400
-
-        if not validate_user(user_id):
-            return jsonify({"error": "Invalid user"}), 401
+            return jsonify({"error": "Unauthorized"}), 401
 
         categories = Category.query.filter_by(user_id=user_id).all()
 
@@ -97,28 +102,7 @@ def create_app():
                 "user_id": c.user_id,
                 "name": c.name,
                 "budget_amount": float(c.budget_amount)
-                if c.budget_amount else None
-            }
-            for c in categories
-        ]), 200
-
-    # -----------------------------------
-    # Get all categories for a user (API version)
-    # -----------------------------------
-    @app.route("/categories/<int:user_id>", methods=["GET"])
-    def get_categories(user_id):
-        if not validate_user(user_id):
-            return jsonify({"error": "Invalid user"}), 401
-
-        categories = Category.query.filter_by(user_id=user_id).all()
-
-        return jsonify([
-            {
-                "id": c.id,
-                "user_id": c.user_id,
-                "name": c.name,
-                "budget_amount": float(c.budget_amount)
-                if c.budget_amount else None
+                if c.budget_amount is not None else None
             }
             for c in categories
         ]), 200
@@ -126,10 +110,11 @@ def create_app():
     # -----------------------------------
     # Get a single category
     # -----------------------------------
-    @app.route("/categories/<int:user_id>/<int:category_id>", methods=["GET"])
-    def get_category(user_id, category_id):
-        if not validate_user(user_id):
-            return jsonify({"error": "Invalid user"}), 401
+    @app.route("/categories/<int:category_id>", methods=["GET"])
+    def get_category(category_id):
+        user_id = get_user_id_from_jwt(request)
+        if not user_id:
+            return jsonify({"error": "Unauthorized"}), 401
 
         category = Category.query.filter_by(
             id=category_id,
@@ -144,23 +129,76 @@ def create_app():
             "user_id": category.user_id,
             "name": category.name,
             "budget_amount": float(category.budget_amount)
-            if category.budget_amount else None
+            if category.budget_amount is not None else None
         }), 200
+
+    # -----------------------------------
+    # Update a category
+    # -----------------------------------
+    @app.route("/categories/<int:category_id>", methods=["PUT"])
+    def update_category(category_id):
+        user_id = get_user_id_from_jwt(request)
+        if not user_id:
+            return jsonify({"error": "Unauthorized"}), 401
+
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "Invalid payload"}), 400
+
+        category = Category.query.filter_by(
+            id=category_id,
+            user_id=user_id
+        ).first()
+
+        if not category:
+            return jsonify({"error": "Category not found"}), 404
+
+        if "name" in data:
+            category.name = data["name"]
+
+        if "budget_amount" in data:
+            category.budget_amount = data["budget_amount"]
+
+        db.session.commit()
+
+        return jsonify({
+            "id": category.id,
+            "user_id": category.user_id,
+            "name": category.name,
+            "budget_amount": float(category.budget_amount)
+            if category.budget_amount is not None else None
+        }), 200
+
+    # -----------------------------------
+    # Delete a category
+    # -----------------------------------
+    @app.route("/categories/<int:category_id>", methods=["DELETE"])
+    def delete_category(category_id):
+        user_id = get_user_id_from_jwt(request)
+        if not user_id:
+            return jsonify({"error": "Unauthorized"}), 401
+
+        category = Category.query.filter_by(
+            id=category_id,
+            user_id=user_id
+        ).first()
+
+        if not category:
+            return jsonify({"error": "Category not found"}), 404
+
+        db.session.delete(category)
+        db.session.commit()
+
+        return jsonify({"message": "Category deleted"}), 200
 
     # -----------------------------------
     # Seed default categories
     # -----------------------------------
     @app.route("/categories/seed", methods=["POST"])
     def seed_categories():
-        data = request.get_json()
-
-        if not data or "user_id" not in data:
-            return jsonify({"error": "user_id required"}), 400
-
-        user_id = data["user_id"]
-
-        if not validate_user(user_id):
-            return jsonify({"error": "Invalid user"}), 401
+        user_id = get_user_id_from_jwt(request)
+        if not user_id:
+            return jsonify({"error": "Unauthorized"}), 401
 
         default_categories = [
             ("Income", None),
@@ -178,6 +216,7 @@ def create_app():
                 user_id=user_id,
                 name=name
             ).first()
+
             if not exists:
                 category = Category(
                     user_id=user_id,

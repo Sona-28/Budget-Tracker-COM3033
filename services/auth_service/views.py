@@ -1,12 +1,24 @@
 from flask import Blueprint, jsonify, request
 from extensions import db
 from models import User
+import jwt
+import os
+from datetime import datetime, timedelta
 
 auth_api = Blueprint('auth_api', __name__)
+
+# -----------------------------------
+# JWT configuration (must match other services)
+# -----------------------------------
+JWT_SECRET = os.getenv("JWT_SECRET", "super-secret-key")
+JWT_ALGORITHM = "HS256"
+JWT_EXPIRATION_MINUTES = 60
+
 
 @auth_api.get("/health")
 def health():
     return jsonify(service="auth", status="ok")
+
 
 @auth_api.post("/register")
 def register():
@@ -16,12 +28,9 @@ def register():
     if not all(data.get(f) for f in required):
         return jsonify(error="Missing required fields"), 400
 
-    # query: does a user with this email already exist?
     existing = User.query.filter_by(email=data["email"]).first()
-
     if existing:
-        return jsonify(error="Email already registered"), 409  # conflict
-
+        return jsonify(error="Email already registered"), 409
 
     user = User(
         firstname=data["firstname"],
@@ -50,6 +59,21 @@ def login():
     if not user or not user.check_password(password):
         return jsonify(error="Invalid credentials"), 401
 
-    return jsonify(message="Login OK", user_id=user.id), 200
+    # -----------------------------------
+    # CREATE JWT
+    # -----------------------------------
+    payload = {
+        "user_id": user.id,
+        "email": user.email,
+        "exp": datetime.utcnow() + timedelta(minutes=JWT_EXPIRATION_MINUTES),
+        "iat": datetime.utcnow()
+    }
 
+    token = jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
+
+    return jsonify(
+        message="Login OK",
+        user_id=user.id,
+        access_token=token
+    ), 200
 

@@ -56,12 +56,14 @@ def register():
 @auth_blueprint.route('/login', methods=["GET", "POST"])
 def login():
     form = LoginForm()
+
     if form.validate_on_submit():
         payload = {
             "email": form.email.data,
             "password": form.password.data,
         }
 
+        # Call auth service
         try:
             resp = requests.post(
                 f"{AUTH_SERVICE_URL}/login",
@@ -69,26 +71,51 @@ def login():
                 timeout=5
             )
         except requests.RequestException:
-            flash("Auth service is unavailable. Please try again later.", "danger")
+            flash(
+                "Auth service is unavailable. Please try again later.",
+                "danger"
+            )
             return render_template('auth/login.html', form=form)
 
+        # Safely parse JSON
         try:
             data = resp.json()
         except ValueError:
             data = {}
 
         if resp.status_code == 200:
+            # Clear any old session data
             session.clear()
+
+            # Store user info
             session["user_id"] = data.get("user_id")
             session["user_email"] = payload["email"]
+
+            # Store JWT (support common key names)
+            session["access_token"] = (
+                data.get("access_token")
+                or data.get("token")
+                or data.get("jwt")
+            )
+
+            # Safety check
+            if not session.get("access_token"):
+                flash(
+                    "Login succeeded but no access token was returned.",
+                    "danger"
+                )
+                return render_template('auth/login.html', form=form)
+
             flash("Login successful.", "success")
             return redirect(url_for('auth.account'))
+
         else:
             error_msg = data.get("error", "Login failed.")
             flash(error_msg, "danger")
             return render_template('auth/login.html', form=form)
 
     return render_template('auth/login.html', form=form)
+
 
 @auth_blueprint.route('/logout')
 def logout():

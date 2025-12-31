@@ -20,7 +20,10 @@ def main():
     processes = []
     for name, path, port in SERVICES:
         print(f"Starting {name} on port {port}…")
-        p = subprocess.Popen([sys.executable, "app.py"], cwd=path)
+        if name == "Web App (UI)":
+            p = subprocess.Popen([sys.executable, "-m", "web_app.app"], cwd=".")
+        else:
+            p = subprocess.Popen([sys.executable, "app.py"], cwd=path)
         processes.append((name, p, port))
         time.sleep(0.3)
 
