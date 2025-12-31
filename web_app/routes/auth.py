@@ -121,13 +121,16 @@ def account():
         form.firstname.data = user.get("firstname")
         form.lastname.data = user.get("lastname")
         form.phone.data = user.get("phone")
+        form.receive_email.data = user.get("receive_email")
+
 
     if form.validate_on_submit():
         print("In POST method")
         payload = {
             "firstname": form.firstname.data,
             "lastname": form.lastname.data,
-            "phone": form.phone.data
+            "phone": form.phone.data,
+            "receive_email": form.receive_email.data
         }
         try:
             update_resp = requests.put(
@@ -150,6 +153,7 @@ def account():
         form.firstname.data = payload["firstname"]
         form.lastname.data = payload["lastname"]
         form.phone.data = payload["phone"]
+        form.receive_email.data = payload["receive_email"]
 
     return render_template(
         "auth/account.html",

@@ -12,6 +12,7 @@ class User(db.Model):
     firstname = db.Column(db.String(100), nullable=False)
     lastname = db.Column(db.String(100), nullable=False)
     phone = db.Column(db.String(100), nullable=True)
+    receive_email = db.Column(db.Boolean, default=True)
 
     def __init__(self, email, password, firstname, lastname, phone=None):
         self.email = email
@@ -19,6 +20,7 @@ class User(db.Model):
         self.password = password
         self.lastname = lastname
         self.phone = phone
+        self.receive_email = True
 
     @property
     def password(self):

@@ -77,7 +77,8 @@ def account(user_id):
         "firstname": user.firstname,
         "lastname": user.lastname,
         "email": user.email,
-        "phone": user.phone
+        "phone": user.phone,
+        "receive_email": user.receive_email
     }
 
     return jsonify(user=user_data), 200
@@ -95,6 +96,8 @@ def update_user(user_id):
         user.lastname = data["lastname"]
     if "phone" in data:
         user.phone = data["phone"]
+    if "receive_email" in data:
+        user.receive_email = data["receive_email"]
 
     db.session.commit()
     return jsonify(message="User updated successfully"), 200

@@ -13,6 +13,7 @@ def health():
 def overspend():
     data = request.json
     user_email = data.get("user_email")
+    name = data.get("name")
     category = data.get("category")
     amount = data.get("amount")
     threshold = data.get("threshold")
@@ -21,7 +22,7 @@ def overspend():
         return jsonify(message="Missing user_email"), 400
 
     subject = f"Overspend Alert: {category}"
-    body = f"Dear user, you have spent {amount} on {category}, exceeding your threshold of {threshold}."
+    body = f"Dear {name}, you have spent {amount} on {category}, exceeding your threshold of {threshold}."
 
     success = send_email(user_email, subject, body)
     if success:
@@ -34,13 +35,14 @@ def overspend():
 def reward():
     data = request.json
     user_email = data.get("user_email")
-    reward_type = data.get("badge") or data.get("points")
+    name = data.get("name")
+    reward_type = data.get("points")
 
     if not user_email or not reward_type:
         return jsonify(message="Missing user_email or reward_type"), 400
 
     subject = "You've earned a reward!"
-    body = f"Congratulations! You have earned: {reward_type}"
+    body = f"Congratulations! {name}, you have earned: {reward_type}"
 
     success = send_email(user_email, subject, body)
     if success:
@@ -53,6 +55,7 @@ def monthly_summary():
     data = request.json
 
     user_email = data.get("user_email")
+    name = data.get("name")
     month = data.get("month")
     total_spent = data.get("total_spent")
     top_category = data.get("top_category")
@@ -63,7 +66,7 @@ def monthly_summary():
 
     subject = f"Your Monthly Spending Summary – {month}"
     body = (
-        f"Hello,\n\n"
+        f"Hello {name},\n\n"
         f"Here is your spending summary for {month}:\n\n"
         f"• Total Spent: {total_spent}\n"
         f"• Top Category: {top_category}\n"
