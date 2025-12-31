@@ -1,245 +1,160 @@
 from flask import Flask, request, jsonify
-from extensions import db
-from models import Category
+from flask_sqlalchemy import SQLAlchemy
+from dotenv import load_dotenv
 import os
-import jwt
 
-# -----------------------------------
-# JWT configuration (shared with auth service)
-# -----------------------------------
-JWT_SECRET = os.getenv("JWT_SECRET", "super-secret-key")
-JWT_ALGORITHM = "HS256"
+# Load .env from project root
+load_dotenv()
 
+app = Flask(__name__)
 
-def get_user_id_from_jwt(req):
-    """
-    Extract and validate JWT from Authorization header.
-    Returns user_id if valid, otherwise None.
-    """
-    auth_header = req.headers.get("Authorization")
+# Database configuration
+database_uri = os.getenv("CATEGORY_DATABASE_URI")
+if not database_uri:
+    raise RuntimeError("CATEGORY_DATABASE_URI is not set")
 
-    if not auth_header or not auth_header.startswith("Bearer "):
-        return None
+app.config["SQLALCHEMY_DATABASE_URI"] = database_uri
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-    token = auth_header.split(" ")[1]
+db = SQLAlchemy(app)
 
-    try:
-        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
-        return payload.get("user_id")
-    except jwt.ExpiredSignatureError:
-        return None
-    except jwt.InvalidTokenError:
-        return None
+class Category(db.Model):
+    __tablename__ = "categories"
 
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    user_id = db.Column(db.Integer, nullable=False)
 
-def create_app():
-    app = Flask(__name__)
+# Default categories
+DEFAULT_CATEGORIES = [
+    "Food",
+    "Transport",
+    "Housing",
+    "Utilities",
+    "Entertainment",
+    "Healthcare",
+    "Education",
+    "Savings",
+    "Other"
+]
 
-    # -----------------------------------
-    # Database configuration
-    # -----------------------------------
-    app.config["SQLALCHEMY_DATABASE_URI"] = (
-        "mysql+pymysql://categories_user:strongpassword@localhost:3306/categoriesdb"
-    )
-    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+# Health check
+@app.route("/health", methods=["GET"])
+def health():
+    return jsonify({"status": "Category service is running"}), 200
 
-    db.init_app(app)
+# Get all categories (with default seeding)
+@app.route("/category", methods=["GET"])
+def get_categories():
+    user_id = request.args.get("user_id")
 
-    # -----------------------------------
-    # Health check
-    # -----------------------------------
-    @app.route("/health", methods=["GET"])
-    def health():
-        return jsonify({
-            "service": "category",
-            "status": "ok"
-        }), 200
+    if not user_id:
+        return jsonify({"error": "user_id is required"}), 400
 
-    # -----------------------------------
-    # Create a category
-    # -----------------------------------
-    @app.route("/categories", methods=["POST"])
-    def create_category():
-        user_id = get_user_id_from_jwt(request)
-        if not user_id:
-            return jsonify({"error": "Unauthorized"}), 401
+    categories = Category.query.filter_by(user_id=user_id).all()
 
-        data = request.get_json()
-        if not data or "name" not in data:
-            return jsonify({"error": "Missing required fields"}), 400
-
-        category = Category(
-            user_id=user_id,
-            name=data["name"],
-            budget_amount=data.get("budget_amount")
-        )
-
-        db.session.add(category)
+    if not categories:
+        for name in DEFAULT_CATEGORIES:
+            db.session.add(Category(name=name, user_id=user_id))
         db.session.commit()
-
-        return jsonify({
-            "id": category.id,
-            "user_id": category.user_id,
-            "name": category.name,
-            "budget_amount": float(category.budget_amount)
-            if category.budget_amount is not None else None
-        }), 201
-
-    # -----------------------------------
-    # Get all categories for logged-in user
-    # -----------------------------------
-    @app.route("/categories", methods=["GET"])
-    def get_categories():
-        user_id = get_user_id_from_jwt(request)
-        if not user_id:
-            return jsonify({"error": "Unauthorized"}), 401
-
         categories = Category.query.filter_by(user_id=user_id).all()
 
-        return jsonify([
-            {
-                "id": c.id,
-                "user_id": c.user_id,
-                "name": c.name,
-                "budget_amount": float(c.budget_amount)
-                if c.budget_amount is not None else None
-            }
-            for c in categories
-        ]), 200
+    return jsonify([
+        {"id": c.id, "name": c.name, "user_id": c.user_id}
+        for c in categories
+    ]), 200
 
-    # -----------------------------------
-    # Get a single category
-    # -----------------------------------
-    @app.route("/categories/<int:category_id>", methods=["GET"])
-    def get_category(category_id):
-        user_id = get_user_id_from_jwt(request)
-        if not user_id:
-            return jsonify({"error": "Unauthorized"}), 401
+# Get single category
+@app.route("/category/<int:category_id>", methods=["GET"])
+def get_category(category_id):
+    user_id = request.args.get("user_id")
 
-        category = Category.query.filter_by(
-            id=category_id,
-            user_id=user_id
-        ).first()
+    if not user_id:
+        return jsonify({"error": "user_id is required"}), 400
 
-        if not category:
-            return jsonify({"error": "Category not found"}), 404
+    category = Category.query.filter_by(
+        id=category_id,
+        user_id=user_id
+    ).first()
 
-        return jsonify({
-            "id": category.id,
-            "user_id": category.user_id,
-            "name": category.name,
-            "budget_amount": float(category.budget_amount)
-            if category.budget_amount is not None else None
-        }), 200
+    if not category:
+        return jsonify({"error": "Category not found"}), 404
 
-    # -----------------------------------
-    # Update a category
-    # -----------------------------------
-    @app.route("/categories/<int:category_id>", methods=["PUT"])
-    def update_category(category_id):
-        user_id = get_user_id_from_jwt(request)
-        if not user_id:
-            return jsonify({"error": "Unauthorized"}), 401
+    return jsonify({
+        "id": category.id,
+        "name": category.name,
+        "user_id": category.user_id
+    }), 200
 
-        data = request.get_json()
-        if not data:
-            return jsonify({"error": "Invalid payload"}), 400
+# Create category
+@app.route("/category", methods=["POST"])
+def create_category():
+    data = request.json
+    name = data.get("name")
+    user_id = data.get("user_id")
 
-        category = Category.query.filter_by(
-            id=category_id,
-            user_id=user_id
-        ).first()
+    if not name or not user_id:
+        return jsonify({"error": "name and user_id are required"}), 400
 
-        if not category:
-            return jsonify({"error": "Category not found"}), 404
+    category = Category(name=name, user_id=user_id)
+    db.session.add(category)
+    db.session.commit()
 
-        if "name" in data:
-            category.name = data["name"]
+    return jsonify({
+        "id": category.id,
+        "name": category.name,
+        "user_id": category.user_id
+    }), 201
 
-        if "budget_amount" in data:
-            category.budget_amount = data["budget_amount"]
+# Update category
+@app.route("/category/<int:category_id>", methods=["PUT"])
+def update_category(category_id):
+    data = request.json
+    name = data.get("name")
+    user_id = data.get("user_id")
 
-        db.session.commit()
+    if not name or not user_id:
+        return jsonify({"error": "name and user_id are required"}), 400
 
-        return jsonify({
-            "id": category.id,
-            "user_id": category.user_id,
-            "name": category.name,
-            "budget_amount": float(category.budget_amount)
-            if category.budget_amount is not None else None
-        }), 200
+    category = Category.query.filter_by(
+        id=category_id,
+        user_id=user_id
+    ).first()
 
-    # -----------------------------------
-    # Delete a category
-    # -----------------------------------
-    @app.route("/categories/<int:category_id>", methods=["DELETE"])
-    def delete_category(category_id):
-        user_id = get_user_id_from_jwt(request)
-        if not user_id:
-            return jsonify({"error": "Unauthorized"}), 401
+    if not category:
+        return jsonify({"error": "Category not found"}), 404
 
-        category = Category.query.filter_by(
-            id=category_id,
-            user_id=user_id
-        ).first()
+    category.name = name
+    db.session.commit()
 
-        if not category:
-            return jsonify({"error": "Category not found"}), 404
+    return jsonify({
+        "id": category.id,
+        "name": category.name,
+        "user_id": category.user_id
+    }), 200
 
-        db.session.delete(category)
-        db.session.commit()
+# Delete category
+@app.route("/category/<int:category_id>", methods=["DELETE"])
+def delete_category(category_id):
+    user_id = request.args.get("user_id")
 
-        return jsonify({"message": "Category deleted"}), 200
+    if not user_id:
+        return jsonify({"error": "user_id is required"}), 400
 
-    # -----------------------------------
-    # Seed default categories
-    # -----------------------------------
-    @app.route("/categories/seed", methods=["POST"])
-    def seed_categories():
-        user_id = get_user_id_from_jwt(request)
-        if not user_id:
-            return jsonify({"error": "Unauthorized"}), 401
+    category = Category.query.filter_by(
+        id=category_id,
+        user_id=user_id
+    ).first()
 
-        default_categories = [
-            ("Income", None),
-            ("Food", 300.00),
-            ("Transport", 150.00),
-            ("Utilities", 200.00),
-            ("Entertainment", 100.00),
-            ("Health", 100.00),
-        ]
+    if not category:
+        return jsonify({"error": "Category not found"}), 404
 
-        created = []
+    db.session.delete(category)
+    db.session.commit()
+    return jsonify({"message": "Category deleted"}), 200
 
-        for name, budget in default_categories:
-            exists = Category.query.filter_by(
-                user_id=user_id,
-                name=name
-            ).first()
-
-            if not exists:
-                category = Category(
-                    user_id=user_id,
-                    name=name,
-                    budget_amount=budget
-                )
-                db.session.add(category)
-                created.append(name)
-
-        db.session.commit()
-
-        return jsonify({
-            "message": "Default categories seeded",
-            "created": created
-        }), 201
-
-    return app
-
-
-# -----------------------------------
-# App entry point
-# -----------------------------------
 if __name__ == "__main__":
-    app = create_app()
+    with app.app_context():
+        db.create_all()
     app.run(host="0.0.0.0", port=5003, debug=True)
 
