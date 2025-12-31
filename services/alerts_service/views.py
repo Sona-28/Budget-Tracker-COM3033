@@ -48,3 +48,33 @@ def reward():
     else:
         return jsonify(message="Failed to send email"), 500
 
+@alerts_api.post("/alerts/monthly-summary")
+def monthly_summary():
+    data = request.json
+
+    user_email = data.get("user_email")
+    month = data.get("month")
+    total_spent = data.get("total_spent")
+    top_category = data.get("top_category")
+    budget_status = data.get("budget_status")
+
+    if not user_email or not month:
+        return jsonify(message="Missing user_email or month"), 400
+
+    subject = f"Your Monthly Spending Summary – {month}"
+    body = (
+        f"Hello,\n\n"
+        f"Here is your spending summary for {month}:\n\n"
+        f"• Total Spent: {total_spent}\n"
+        f"• Top Category: {top_category}\n"
+        f"• Budget Status: {budget_status}\n\n"
+        f"Keep tracking your expenses to stay on top of your finances.\n\n"
+        f"– WALL-ET Team"
+    )
+
+    success = send_email(user_email, subject, body)
+
+    if success:
+        return jsonify(message="Monthly summary email sent successfully")
+    else:
+        return jsonify(message="Failed to send monthly summary email"), 500
