@@ -10,21 +10,12 @@ def create_app():
 
     # CONFIG
     app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
-
-    auth_db_uri = os.getenv("AUTH_DATABASE_URI")
-    if not auth_db_uri:
-        auth_db_uri = "sqlite:///auth.db"  # fallback for local/dev
-    
-    app.config['SQLALCHEMY_DATABASE_URI'] = auth_db_uri
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('AUTH_DATABASE_URI')
     app.config['SQLALCHEMY_ECHO'] = True
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
+    
     db.init_app(app)
-
-    from services.auth_service.models import User
-
-    with app.app_context():
-        db.create_all()
 
     # from services.auth_service import models
     from services.auth_service.views import auth_api
