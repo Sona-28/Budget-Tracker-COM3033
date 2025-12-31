@@ -1,18 +1,27 @@
-# services/transaction_service/app.py
 from fastapi import FastAPI
-from services.transaction_service.api.v1 import transactions
+from dotenv import load_dotenv
 
-app = FastAPI(title="Transactions Service", version="v1")
+load_dotenv()
 
-# Include your transactions router
+from services.transaction_service.api.v1 import transactions, analytics
+
+app = FastAPI(
+    title="Transactions Service",
+    version="v1"
+)
+
+# Core APIs
 app.include_router(transactions.router, prefix="/api/v1")
+app.include_router(analytics.router, prefix="/api/v1")
 
-# Health endpoint at root (optional)
 @app.get("/health")
 def health():
-    return {"service": "transactions", "status": "ok", "version": "v1"}
+    return {
+        "service": "transactions",
+        "status": "ok",
+        "version": "v1"
+    }
 
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=5002)
-
