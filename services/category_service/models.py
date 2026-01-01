@@ -9,7 +9,7 @@ class Category(db.Model):
     user_id = db.Column(db.Integer, nullable=False, index=True)
 
     name = db.Column(db.String(50), nullable=False)
-    budget_amount = db.Column(db.Numeric(10, 2), nullable=True)
+    budget_amount = db.Column(db.Numeric(precision=10, scale=2), nullable=True)
 
     __table_args__ = (
         db.UniqueConstraint("user_id", "name", name="uq_user_category"),
