@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1 class="title is-2">Edit Transaction</h1>
+
+<form method="POST" class="box">
+    <div class="field">
+        <input class="input" name="title" value="{{ tx.title }}" required>
+    </div>
+
+    <div class="field">
+        <input class="input" type="number" step="0.01"
+               name="amount" value="{{ tx.amount }}" required>
+    </div>
+
+    <div class="field">
+        <input class="input" name="category" value="{{ tx.category }}">
+    </div>
+
+    <div class="field">
+        <input class="input" name="description" value="{{ tx.description }}">
+    </div>
+
+    <div class="field">
+        <input class="input" type="datetime-local"
+               name="date" value="{{ tx.date[:16] }}" required>
+    </div>
+
+    <div class="field">
+        <select class="input" name="type">
+            <option value="expense"
+                {% if tx.type == "expense" %}selected{% endif %}>
+                Expense
+            </option>
+            <option value="income"
+                {% if tx.type == "income" %}selected{% endif %}>
+                Income
+            </option>
+        </select>
+    </div>
+
+    <button class="button is-primary">Update</button>
+    <a class="button" href="/transaction">Cancel</a>
+</form>
+{% endblock %}

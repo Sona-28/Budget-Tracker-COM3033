@@ -1,7 +1,78 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 
 {% block content %}
-    
-    <h1 class="title is-1">transaction</h1>
+<h1 class="title is-2">Transactions</h1>
 
+<form method="POST" class="box">
+    <div class="field">
+        <input class="input" name="title" placeholder="Title" required>
+    </div>
+
+    <div class="field">
+        <input class="input" type="number" step="0.01" name="amount" placeholder="Amount" required>
+    </div>
+
+    <div class="field">
+        <input class="input" name="category" placeholder="Category">
+    </div>
+
+    <div class="field">
+        <input class="input" name="description" placeholder="Description">
+    </div>
+
+    <div class="field">
+        <input class="input" type="datetime-local" name="date" required>
+    </div>
+
+    <div class="field">
+        <select class="input" name="type">
+            <option value="expense">Expense</option>
+            <option value="income">Income</option>
+        </select>
+    </div>
+
+    <button class="button is-primary">Add Transaction</button>
+</form>
+
+<hr>
+
+<h2 class="title is-4">Your Transactions</h2>
+
+{% if transactions %}
+<table class="table is-striped is-fullwidth">
+    <thead>
+        <tr>
+            <th>Title</th>
+            <th>Amount</th>
+            <th>Category</th>
+            <th>Date</th>
+            <th>Type</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for tx in transactions %}
+        <tr>
+            <td>{{ tx.title }}</td>
+            <td>{{ tx.amount }}</td>
+            <td>{{ tx.category }}</td>
+            <td>{{ tx.date }}</td>
+            <td>{{ tx.type }}</td>
+            <td>
+               <a class="button is-small is-info"
+               href="/transaction/{{ tx.id }}/edit">Edit</a>
+
+               <form method="POST"
+                action="/transaction/{{ tx.id }}/delete"
+                style="display:inline">
+                <button class="button is-small is-danger">Delete</button>
+               </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>No transactions yet.</p>
+{% endif %}
 {% endblock %}
