@@ -8,6 +8,20 @@ auth_api = Blueprint('auth_api', __name__)
 def health():
     return jsonify(service="auth", status="ok")
 
+@auth_api.get("/users/<int:user_id>")
+def get_user(user_id):
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify(error="User not found"), 404
+
+    return jsonify(
+        id=user.id,
+        firstname=user.firstname,
+        lastname=user.lastname,
+        email=user.email
+    ), 200
+
+
 @auth_api.post("/register")
 def register():
     data = request.get_json() or {}
@@ -51,4 +65,5 @@ def login():
         return jsonify(error="Invalid credentials"), 401
 
     return jsonify(message="Login OK", user_id=user.id), 200
+
 
