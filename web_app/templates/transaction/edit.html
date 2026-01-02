@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1 class="title is-2">Edit Transaction</h1>
+
+<form method="POST" class="box">
+    <div class="field">
+        <input class="input" name="title" value="{{ tx.title }}" required>
+    </div>
+
+    <div class="field">
+        <input class="input" type="number" step="0.01"
+               name="amount" value="{{ tx.amount }}" required>
+    </div>
+
+    <div class="field">
+        <div class="select is-fullwidth">
+            <select name="category_id" required>
+                {% for c in categories %}
+                    <option value="{{ c.id }}"
+                        {% if c.id == tx.category.id %}selected{% endif %}>
+                        {{ c.name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+
+    <div class="field">
+        <input class="input" name="description"
+               value="{{ tx.description }}">
+    </div>
+
+    <div class="field">
+        <input class="input" type="datetime-local"
+               name="date" value="{{ tx.date[:16] }}" required>
+    </div>
+
+    <div class="field">
+        <div class="select is-fullwidth">
+            <select name="type">
+                <option value="expense"
+                    {% if tx.type == "expense" %}selected{% endif %}>
+                    Expense
+                </option>
+                <option value="income"
+                    {% if tx.type == "income" %}selected{% endif %}>
+                    Income
+                </option>
+            </select>
+        </div>
+    </div>
+
+    <button class="button is-primary">Update</button>
+    <a class="button" href="/transaction">Cancel</a>
+</form>
+{% endblock %}
