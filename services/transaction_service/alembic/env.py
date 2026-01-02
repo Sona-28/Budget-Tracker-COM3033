@@ -13,16 +13,18 @@ from services.transaction_service.database.connection import Base
 from services.transaction_service.models.transaction import Transaction
 
 # Load env vars
-load_dotenv()
+load_dotenv(os.path.join(os.path.dirname(__file__), "..", ".env"))
+
 
 config = context.config
 
 # Set DB URL strictly from env
-DATABASE_URL = os.getenv("DATABASE_URL")
+DATABASE_URL = os.getenv("TRANSACTIONS_DATABASE_URI")
 if not DATABASE_URL:
     raise RuntimeError("DATABASE_URL not set")
 
-config.set_main_option("sqlalchemy.url", DATABASE_URL)
+config.set_main_option("sqlalchemy.url", DATABASE_URL.replace("%", "%%"))
+
 
 # Logging
 if config.config_file_name is not None:

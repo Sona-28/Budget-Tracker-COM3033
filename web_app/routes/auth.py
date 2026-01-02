@@ -21,7 +21,7 @@ def register():
             "phone": form.phone.data or None,
         }
 
-        print(payload)
+        #print(payload)
 
         # Try to parse JSON response safely
         try:
