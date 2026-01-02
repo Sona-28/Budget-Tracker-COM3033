@@ -10,3 +10,5 @@ bcrypt
 flask_login
 fastapi
 uvicorn
+sqlalchemy
+pydantic

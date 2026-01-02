@@ -2,7 +2,7 @@ import os
 import requests
 from flask import Blueprint, render_template, flash, session
 
-from web_app.routes.utils import require_login
+from routes.utils import require_login
 analytics_blueprint = Blueprint('analytics', __name__, template_folder='../templates')
 
 ANALYTICS_SERVICE_URL = (
