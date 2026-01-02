@@ -8,6 +8,9 @@ analytics_blueprint = Blueprint('analytics', __name__, template_folder='../templ
 ANALYTICS_SERVICE_URL = (
     os.getenv("ANALYTICS_SERVICE_URL") or "http://localhost:5004"
 ).rstrip("/")
+CATEGORY_SERVICE_URL = (
+    os.getenv("CATEGORY_SERVICE_URL") or "http://localhost:5003"
+).rstrip("/")
 
 
 def _default_analytics_data():
@@ -29,6 +32,7 @@ def _default_analytics_data():
         },
         "transactions": [],
         "by_month": [],
+        "budgets": [],
         "errors": [],
     }
 
@@ -40,8 +44,9 @@ def analytics():
         return guard
 
     analytics_data = _default_analytics_data()
+    user_id = session.get("user_id")
     headers = {
-        "X-User-Id": str(session.get("user_id"))
+        "X-User-Id": str(user_id)
     }
 
     try:
@@ -69,6 +74,25 @@ def analytics():
     errors = analytics_data.get("errors") or []
     if errors:
         flash("Analytics data is incomplete.", "warning")
+
+    analytics_data.setdefault("budgets", [])
+    try:
+        resp = requests.get(
+            f"{CATEGORY_SERVICE_URL}/category",
+            params={"user_id": user_id},
+            timeout=5
+        )
+        if resp.status_code == 200:
+            categories = resp.json()
+            analytics_data["budgets"] = [
+                {
+                    "name": (cat.get("name") or "Uncategorised"),
+                    "budget_amount": cat.get("budget_amount")
+                }
+                for cat in categories
+            ]
+    except requests.RequestException:
+        pass
 
     return render_template(
         "analytics/analytics.html",

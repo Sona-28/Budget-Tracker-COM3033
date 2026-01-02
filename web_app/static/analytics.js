@@ -7,6 +7,9 @@ const perCategoryRaw = Array.isArray(analyticsData.per_category)
 const transactionsRaw = Array.isArray(analyticsData.transactions)
   ? analyticsData.transactions
   : [];
+const budgetsRaw = Array.isArray(analyticsData.budgets)
+  ? analyticsData.budgets
+  : [];
 
 const perCategory = perCategoryRaw.map((item) => ({
   category: item.category || "Uncategorised",
@@ -20,6 +23,23 @@ const transactions = transactionsRaw.map((tx) => ({
   type: tx.type || "expense",
   date: tx.date || "",
 }));
+
+const budgetItems = budgetsRaw
+  .map((item) => ({
+    name: item?.name || item?.category || "Uncategorised",
+    budget: Number(item?.budget_amount ?? item?.budget ?? 0),
+  }))
+  .filter((item) => Number.isFinite(item.budget) && item.budget > 0);
+
+const budgetMap = new Map();
+budgetItems.forEach((item) => {
+  budgetMap.set(item.name, item.budget);
+});
+
+const spendMap = new Map();
+perCategory.forEach((item) => {
+  spendMap.set(item.category, item.total);
+});
 
 const totals = analyticsData.totals || {};
 const summary = analyticsData.summary || {};
@@ -89,6 +109,8 @@ const barEmpty = document.getElementById("barEmpty");
 const expensePieEmpty = document.getElementById("expensePieEmpty");
 const lineEmpty = document.getElementById("lineEmpty");
 const incomeExpenseEmpty = document.getElementById("incomeExpenseEmpty");
+const budgetList = document.getElementById("budgetList");
+const budgetEmpty = document.getElementById("budgetEmpty");
 
 function toggleEmptyState(element, isVisible) {
   if (!element) return;
@@ -97,6 +119,72 @@ function toggleEmptyState(element, isVisible) {
   } else {
     element.classList.remove("is-visible");
   }
+}
+
+function renderBudgetList() {
+  if (!budgetList) return;
+
+  budgetList.textContent = "";
+
+  const rows = Array.from(budgetMap.entries()).map(([name, budget]) => {
+    const spent = spendMap.get(name) || 0;
+    const remaining = budget - spent;
+    const utilization = budget > 0 ? spent / budget : 0;
+    return {
+      name,
+      budget,
+      spent,
+      remaining,
+      utilization,
+    };
+  });
+
+  rows.sort((a, b) => b.utilization - a.utilization);
+  toggleEmptyState(budgetEmpty, rows.length === 0);
+
+  rows.forEach((row) => {
+    const isOver = row.remaining < -0.01;
+    const isOnBudget = Math.abs(row.remaining) <= 0.01;
+
+    const rowEl = document.createElement("div");
+    rowEl.className = `budget-row${isOver ? " is-over" : ""}`;
+
+    const metaEl = document.createElement("div");
+    metaEl.className = "budget-meta";
+
+    const nameEl = document.createElement("span");
+    nameEl.className = "budget-name";
+    nameEl.textContent = row.name;
+
+    const numbersEl = document.createElement("span");
+    numbersEl.className = "budget-numbers";
+    numbersEl.textContent = `${formatMoney(row.spent)} / ${formatMoney(row.budget)}`;
+
+    metaEl.append(nameEl, numbersEl);
+
+    const barEl = document.createElement("div");
+    barEl.className = "budget-bar";
+
+    const fillEl = document.createElement("span");
+    fillEl.className = "budget-fill";
+    const percent = Math.min(100, Math.max(0, row.utilization * 100));
+    fillEl.style.width = `${percent}%`;
+
+    barEl.appendChild(fillEl);
+
+    const statusEl = document.createElement("div");
+    statusEl.className = "budget-status";
+    if (isOnBudget) {
+      statusEl.textContent = "On budget";
+    } else if (isOver) {
+      statusEl.textContent = `Over by ${formatMoney(Math.abs(row.remaining))}`;
+    } else {
+      statusEl.textContent = `${formatMoney(row.remaining)} remaining`;
+    }
+
+    rowEl.append(metaEl, barEl, statusEl);
+    budgetList.appendChild(rowEl);
+  });
 }
 
 const barCtx = document.getElementById("barChart");
@@ -302,6 +390,7 @@ function updateLineChart() {
 
 updateCategoryLabel();
 updateLineChart();
+renderBudgetList();
 
 const expensePieCtx = document.getElementById("expensePie");
 if (expensePieCtx) {
