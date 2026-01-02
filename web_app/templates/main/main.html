@@ -2,6 +2,69 @@
 
 {% block content %}
 
-    <h1 class="title is-1">main</h1>
+<section class="hero is-light">
+  <div>
+    <div class="container has-text-centered">
+      <figure class="image is-inline-block">
+        <img src="{{ url_for('static', filename='img/logo.png') }}" alt="WALL-ET Logo" style="height: 200px; max-width: 360px;">
+      </figure>
+      <h2 class="subtitle">
+        Your friendly budget tracker. Track, categorize, and get rewarded for smart spending!
+      </h2>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="columns is-multiline is-variable is-8">
+
+      <!-- Feature 1: Alerts & Reminders -->
+      <div class="column is-half">
+        <div class="box feature-box has-text-centered">
+          <span class="icon is-large">
+            <i class="fas fa-bell fa-2x"></i>
+          </span>
+          <h3 class="title is-4 mt-2">Alerts & Reminders</h3>
+          <p>Never miss a monthly summary or overspend. Get timely alerts and reminders for your transactions.</p>
+        </div>
+      </div>
+
+      <!-- Feature 2: Rewards & Insights -->
+      <div class="column is-half">
+        <div class="box feature-box has-text-centered">
+          <span class="icon is-large">
+            <i class="fas fa-gift fa-2x"></i>
+          </span>
+          <h3 class="title is-4 mt-2">Rewards & Insights</h3>
+          <p>Earn points for smart spending habits and gain insights into your financial health.</p>
+        </div>
+      </div>
+
+      <!-- Feature 3: Categories & Budgeting -->
+      <div class="column is-half">
+        <div class="box feature-box has-text-centered">
+          <span class="icon is-large">
+            <i class="fas fa-list-alt fa-2x"></i>
+          </span>
+          <h3 class="title is-4 mt-2">Categories & Budgeting</h3>
+          <p>Organize your spending into categories and set budgets to stay on track.</p>
+        </div>
+      </div>
+
+      <!-- Feature 4: Analytics & Reports -->
+      <div class="column is-half">
+        <div class="box feature-box has-text-centered">
+          <span class="icon is-large">
+            <i class="fas fa-chart-line fa-2x"></i>
+          </span>
+          <h3 class="title is-4 mt-2">Analytics & Reports</h3>
+          <p>Visualize your spending trends, track goals, and make informed financial decisions.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
 
 {% endblock %}

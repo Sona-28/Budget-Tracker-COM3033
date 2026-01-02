@@ -1,7 +1,7 @@
 import os
 from flask import Flask
 from dotenv import load_dotenv
-from services.auth_service.extensions import db
+from extensions import db
 
 load_dotenv()
 
@@ -18,7 +18,7 @@ def create_app():
     db.init_app(app)
 
     # from services.auth_service import models
-    from services.auth_service.views import auth_api
+    from views import auth_api
 
     app.register_blueprint(auth_api)
     return app

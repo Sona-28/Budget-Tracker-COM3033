@@ -1,7 +1,190 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    
-    <h1 class="title is-1">Account</h1>
+<section class="section">
+  <div class="container">
+
+    <h1 class="title is-1 has-text-centered mb-6">Profile</h1>
+
+    <div class="columns is-variable is-8">
+
+      <!-- Profile Card -->
+      <div class="column is-4">
+        <div class="card">
+          <div class="card-content has-text-centered">
+            <figure class="image is-128x128 is-inline-block mb-3">
+              <img class="is-rounded" src="{{ url_for('static', filename='img/default-avatar.png') }}"
+                alt="Profile picture">
+            </figure>
+            <p class="subtitle is-6 has-text-black">
+              {{ form.firstname.data }} {{ form.lastname.data }}
+            </p>
+            <p class="subtitle is-6 has-text-black">
+              {{ user_email }}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Account Details -->
+      <div class="column is-8">
+        <div class="card">
+          <div class="card-content">
+
+            <h3 class="title is-4 mb-4">Account Details</h3>
+
+            <form method="POST" id="profile-form">
+              {{ form.hidden_tag() }}
+
+              <div class="field">
+                <label class="label">First Name</label>
+                <div class="control">
+                  {{ form.firstname(class="input", readonly=True) }}
+                </div>
+              </div>
+
+              <div class="field">
+                <label class="label">Last Name</label>
+                <div class="control">
+                  {{ form.lastname(class="input", readonly=True) }}
+                </div>
+              </div>
+
+              <div class="field">
+                <label class="label">Phone</label>
+                <div class="control">
+                  {{ form.phone(class="input", readonly=True) }}
+                </div>
+              </div>
+
+              <div class="field">
+                <label class="label">Email Notifications</label>
+                {{ form.receive_email(id="receive_email", type="hidden") }}
+
+                <div class="buttons has-addons is-centered">
+                  <button type="button" id="email-yes"
+                    class="button {% if form.receive_email.data %}is-success is-selected{% endif %}" disabled>
+                    Yes
+                  </button>
+                  <button type="button" id="email-no"
+                    class="button {% if not form.receive_email.data %}is-danger is-selected{% endif %}" disabled>
+                    No
+                  </button>
+                </div>
+              </div>
+
+              <div class="field is-grouped mt-4">
+                <div class="control">
+                  <button type="button" id="edit-btn" class="button is-primary">
+                    Edit Profile
+                  </button>
+                </div>
+                <div class="control">
+                  {{ form.submit(
+                  id="update-btn",
+                  class="button is-success",
+                  style="display:none;"
+                  ) }}
+                </div>
+              </div>
+
+            </form>
+
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Change Password -->
+    <div class="section mt-6">
+      <div class="card">
+        <div class="card-content">
+
+          <h3 class="title is-4 mb-4">Change Password</h3>
+
+          <form method="POST" action="{{ url_for('auth.change_password') }}">
+            {{ password_form.hidden_tag() }}
+
+            <div class="field">
+              <label class="label">Current Password</label>
+              <div class="control">
+                {{ password_form.current_password(class="input") }}
+              </div>
+            </div>
+
+            <div class="field">
+              <label class="label">New Password</label>
+              <div class="control">
+                {{ password_form.new_password(class="input") }}
+              </div>
+            </div>
+
+            <div class="field">
+              <label class="label">Confirm New Password</label>
+              <div class="control">
+                {{ password_form.confirm_password(class="input") }}
+              </div>
+            </div>
+
+            <div class="field mt-4">
+              {{ password_form.submit(class="button is-danger") }}
+            </div>
+
+          </form>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- JS -->
+<script>
+  const editBtn = document.getElementById('edit-btn');
+  const updateBtn = document.getElementById('update-btn');
+  const inputs = document.querySelectorAll('#profile-form input');
+
+  const yesBtn = document.getElementById('email-yes');
+  const noBtn = document.getElementById('email-no');
+  const emailInput = document.getElementById('receive_email');
+
+  function selectYes() {
+    yesBtn.classList.add('is-success', 'is-selected');
+    noBtn.classList.remove('is-danger', 'is-selected');
+    emailInput.value = 'true';
+  }
+
+  function selectNo() {
+    noBtn.classList.add('is-danger', 'is-selected');
+    yesBtn.classList.remove('is-success', 'is-selected');
+    emailInput.value = 'false';
+  }
+
+  yesBtn.addEventListener('click', selectYes);
+  noBtn.addEventListener('click', selectNo);
+
+  function enableEditMode() {
+    inputs.forEach(input => {
+      input.removeAttribute('readonly');
+      input.removeAttribute('disabled');
+    });
+
+    yesBtn.removeAttribute('disabled');
+    noBtn.removeAttribute('disabled');
+
+    editBtn.style.display = 'none';
+    updateBtn.style.display = 'inline-block';
+  }
+
+  editBtn.addEventListener('click', enableEditMode);
+</script>
+
+{% if form.errors %}
+<script>
+  enableEditMode();
+</script>
+{% endif %}
 
 {% endblock %}
