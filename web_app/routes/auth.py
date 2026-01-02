@@ -6,6 +6,7 @@ from forms.auth_forms import RegisterForm, LoginForm, ProfileForm, ChangePasswor
 auth_blueprint = Blueprint('auth', __name__, template_folder='../templates')
 
 AUTH_SERVICE_URL = os.getenv("AUTH_SERVICE_URL", "http://localhost:5001")
+POINTS_SERVICE_URL = os.getenv("POINTS_SERVICE_URL", "http://localhost:5006")
 
 @auth_blueprint.route('/register', methods=["GET", "POST"])
 def register():
@@ -117,6 +118,15 @@ def account():
 
     user_email = user.get("email")
 
+    # Fetch user's total points
+    try:
+        points_resp = requests.get(f"{POINTS_SERVICE_URL}/points/{user_id}", timeout=5)
+        points_resp.raise_for_status()
+        points_data = points_resp.json()
+        total_points = points_data.get("total_points", 0)
+    except requests.RequestException:
+        total_points = 0  # Default to 0 if service unavailable
+
     if request.method == "GET":
         print("In GET method")
         form.firstname.data = user.get("firstname")
@@ -146,7 +156,8 @@ def account():
                 "auth/account.html",
                 form=form,
                 user_email=user_email,
-                password_form=password_form
+                password_form=password_form,
+                total_points=total_points
             )
 
         flash("Profile updated successfully!", "success")
@@ -160,7 +171,8 @@ def account():
         "auth/account.html",
         form=form,
         user_email=user_email,
-        password_form=password_form
+        password_form=password_form,
+        total_points=total_points
     )
 
 @auth_blueprint.route('/change_password', methods=["POST"])

@@ -1,6 +1,7 @@
 from flask import Blueprint, jsonify, request
 from extensions import db
 from models import User
+import os
 
 auth_api = Blueprint('auth_api', __name__)
 
@@ -20,6 +21,23 @@ def get_user(user_id):
         lastname=user.lastname,
         email=user.email
     ), 200
+
+@auth_api.get("/users")
+def get_all_users():
+    api_key = request.headers.get("X-API-Key")
+    expected_key = os.getenv("INTERNAL_API_KEY")
+    if api_key != expected_key:
+        return jsonify(error="Unauthorized"), 403
+    
+    users = User.query.all()
+    return jsonify([
+        {
+            "id": u.id,
+            "email": u.email,
+            "firstname": u.firstname,
+            "lastname": u.lastname
+        } for u in users
+    ]), 200
 
 
 @auth_api.post("/register")
