@@ -108,8 +108,9 @@ def account():
 
     try:
         resp = requests.get(f"{AUTH_SERVICE_URL}/users/{user_id}", timeout=5)
+        print(resp.json())
         resp.raise_for_status()
-        user = resp.json()["user"]
+        user = resp.json()
     except requests.RequestException:
         flash("Could not fetch profile info.", "danger")
         return redirect(url_for("auth.login"))

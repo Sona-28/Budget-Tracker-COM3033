@@ -18,7 +18,8 @@ def get_user(user_id):
         id=user.id,
         firstname=user.firstname,
         lastname=user.lastname,
-        email=user.email
+        email=user.email,
+        receive_email=user.receive_email
     ), 200
 
 
