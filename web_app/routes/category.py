@@ -1,6 +1,7 @@
 import os
 import requests
 from flask import Blueprint, render_template, session, redirect, url_for, flash, request
+from web_app.forms.category_forms import CategoryForm
 
 category_blueprint = Blueprint(
     "category",
@@ -10,44 +11,37 @@ category_blueprint = Blueprint(
 
 CATEGORY_SERVICE_URL = os.getenv("CATEGORY_SERVICE_URL", "http://localhost:5003")
 
-
 # List Categories
 @category_blueprint.route("/category")
 def category():
     user_id = session.get("user_id")
+
     if not user_id:
+        flash("Please log in first.", "warning")
         return redirect(url_for("auth.login"))
 
-    response = requests.get(
-        f"{CATEGORY_SERVICE_URL}/category",
-        params={"user_id": user_id}
-    )
-
-    if response.status_code != 200:
-        flash("Failed to fetch categories", "danger")
+    try:
+        resp = requests.get(
+            f"{CATEGORY_SERVICE_URL}/category",
+            params={"user_id": user_id},
+            timeout=5
+        )
+    except requests.RequestException:
+        flash("Category service unavailable.", "danger")
         return render_template("category/category.html", categories=[])
 
-    categories_data = response.json()
+    if resp.status_code != 200:
+        flash("Failed to load categories.", "danger")
+        return render_template("category/category.html", categories=[])
 
-    # 🔑 IMPORTANT: pass budget_amount through
-    categories = []
-    for c in categories_data:
-        categories.append({
-            "id": c["id"],
-            "name": c["name"],
-            "budget_amount": c.get("budget_amount")
-        })
-
-    return render_template(
-        "category/category.html",
-        categories=categories
-    )
-
+    categories = resp.json()
+    return render_template("category/category.html", categories=categories)
 
 
 # Create Category
 @category_blueprint.route("/category/create", methods=["GET", "POST"])
 def create_category():
+    form = CategoryForm()
     user_id = session.get("user_id")
 
     if not user_id:
@@ -62,18 +56,14 @@ def create_category():
             flash("Category name is required.", "danger")
             return redirect(url_for("category.create_category"))
 
-        payload = {
-            "name": name,
-     	    "budget_amount": (
-                float(budget_amount) if budget_amount not in ("", None) else None
-            )
-        }
-
         try:
             resp = requests.post(
                 f"{CATEGORY_SERVICE_URL}/category",
-                json=payload,
-                params={"user_id": user_id},
+                json={
+                    "name": name,
+                    "budget_amount": budget_amount,
+                    "user_id": user_id
+                },
                 timeout=5
             )
         except requests.RequestException:
@@ -87,7 +77,7 @@ def create_category():
 
         return redirect(url_for("category.category"))
 
-    return render_template("category/create_category.html")
+    return render_template("category/create_category.html", form=form)
 
 
 # Edit Category
@@ -103,24 +93,19 @@ def edit_category(category_id):
     if request.method == "POST":
         name = request.form.get("name")
         budget_amount = request.form.get("budget_amount")
-
         if not name:
             flash("Category name is required.", "danger")
             return redirect(url_for("category.edit_category", category_id=category_id))
-
-        payload = {
-            "name": name,
-            "user_id": user_id,
-            "budget_amount": (
-                float(budget_amount) if budget_amount not in ("", None) else None
-            )
-        }
 
 
         try:
             resp = requests.put(
                 f"{CATEGORY_SERVICE_URL}/category/{category_id}",
-                json=payload,
+                json={
+                    "name": name,
+                    "budget_amount": budget_amount,
+                    "user_id": user_id
+                },
                 timeout=5
             )
         except requests.RequestException:
@@ -134,7 +119,7 @@ def edit_category(category_id):
         flash("Category updated successfully.", "success")
         return redirect(url_for("category.category"))
 
-    # GET - load category
+    # GET – load category
     try:
         resp = requests.get(
             f"{CATEGORY_SERVICE_URL}/category/{category_id}",

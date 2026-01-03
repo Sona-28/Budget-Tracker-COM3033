@@ -26,11 +26,10 @@
                 <!-- Category Name -->
                 <td>{{ category["name"] }}</td>
 
-                <!-- Budget Amount (SAFE) -->
+                <!-- Budget Amount -->
                 <td>
-                    {% set budget = category.get("budget_amount") %}
-                    {% if budget is not none %}
-                        £{{ "%.2f"|format(budget) }}
+                    {% if "budget_amount" in category %}
+                        £{{ category["budget_amount"] if category["budget_amount"] is not none else '0.00' }}
                     {% else %}
                         —
                     {% endif %}

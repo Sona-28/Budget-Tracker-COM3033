@@ -3,34 +3,27 @@
 {% block content %}
 <div class="container mt-4" style="max-width: 600px;">
 
-    <h2 class="mb-4">Edit Category</h2>
-
     <form method="POST">
         <!-- Category Name -->
         <div class="mb-3">
-            <label for="name" class="form-label">
-                Category Name
-            </label>
-            <input type="text"
-                   class="form-control"
-                   id="name"
-                   name="name"
-                   value="{{ category['name'] }}"
-                   required>
-        </div>
-
-        <!-- Budget Amount -->
-        <div class="mb-3">
-            <label for="budget_amount" class="form-label">
-                Budget Amount (£)
-            </label>
-            <input type="number"
-                   class="form-control"
-                   id="budget_amount"
-                   name="budget_amount"
-                   step="0.01"
-                   min="0"
-                   value="{{ category['budget_amount'] if category['budget_amount'] is not none else '' }}">
+            <label for="name" class="form-label">Category Name</label>
+            <input
+                type="text"
+                id="name"
+                name="name"
+                class="form-control"
+                value="{{ category.name }}"
+                required
+            >
+            <label class="form-label mt-3">Monthly Budget (£)</label>
+            <input
+                type="number"
+                step="0.01"
+                id="budget_amount"
+                name="budget_amount"
+                class="form-control"
+                value="{{ category.budget_amount }}"
+            >
         </div>
 
         <!-- Buttons -->

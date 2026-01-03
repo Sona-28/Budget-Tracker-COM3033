@@ -14,11 +14,21 @@
     </div>
 
     <div class="field">
-        <input class="input" name="category" value="{{ tx.category }}">
+        <div class="select is-fullwidth">
+            <select name="category_id" required>
+                {% for c in categories %}
+                    <option value="{{ c.id }}"
+                        {% if c.id == tx.category.id %}selected{% endif %}>
+                        {{ c.name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
     </div>
 
     <div class="field">
-        <input class="input" name="description" value="{{ tx.description }}">
+        <input class="input" name="description"
+               value="{{ tx.description }}">
     </div>
 
     <div class="field">
@@ -27,16 +37,18 @@
     </div>
 
     <div class="field">
-        <select class="input" name="type">
-            <option value="expense"
-                {% if tx.type == "expense" %}selected{% endif %}>
-                Expense
-            </option>
-            <option value="income"
-                {% if tx.type == "income" %}selected{% endif %}>
-                Income
-            </option>
-        </select>
+        <div class="select is-fullwidth">
+            <select name="type" required>
+                <option value="expense"
+                    {% if tx.type == "expense" %}selected{% endif %}>
+                    Expense
+                </option>
+                <option value="income"
+                    {% if tx.type == "income" %}selected{% endif %}>
+                    Income
+                </option>
+            </select>
+        </div>
     </div>
 
     <button class="button is-primary">Update</button>
