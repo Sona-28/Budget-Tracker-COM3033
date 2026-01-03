@@ -45,9 +45,9 @@ const totals = analyticsData.totals || {};
 const summary = analyticsData.summary || {};
 const incomeVsExpense = analyticsData.income_vs_expense || {};
 
-const currencyFormatter = new Intl.NumberFormat("en-US", {
+const currencyFormatter = new Intl.NumberFormat("en-GB", {
   style: "currency",
-  currency: "USD",
+  currency: "GBP",
   maximumFractionDigits: 2,
 });
 
