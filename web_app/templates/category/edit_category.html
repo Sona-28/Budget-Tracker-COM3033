@@ -1,37 +1,36 @@
 {% extends "base.html" %}
 
-{% block title %}Edit Category{% endblock %}
-
 {% block content %}
-<div class="container mt-4">
-    <h2>Edit Category</h2>
-    <hr>
+<div class="container mt-4" style="max-width: 600px;">
+
+    <h2 class="mb-4">Edit Category</h2>
 
     <form method="POST">
-        {{ form.hidden_tag() }}
-
         <!-- Category Name -->
         <div class="mb-3">
-            {{ form.name.label(class="form-label") }}
-            {{ form.name(class="form-control") }}
-
-            {% for error in form.name.errors %}
-                <div class="text-danger small">
-                    {{ error }}
-                </div>
-            {% endfor %}
+            <label for="name" class="form-label">
+                Category Name
+            </label>
+            <input type="text"
+                   class="form-control"
+                   id="name"
+                   name="name"
+                   value="{{ category['name'] }}"
+                   required>
         </div>
 
         <!-- Budget Amount -->
         <div class="mb-3">
-            {{ form.budget_amount.label(class="form-label") }}
-            {{ form.budget_amount(class="form-control") }}
-
-            {% for error in form.budget_amount.errors %}
-                <div class="text-danger small">
-                    {{ error }}
-                </div>
-            {% endfor %}
+            <label for="budget_amount" class="form-label">
+                Budget Amount (£)
+            </label>
+            <input type="number"
+                   class="form-control"
+                   id="budget_amount"
+                   name="budget_amount"
+                   step="0.01"
+                   min="0"
+                   value="{{ category['budget_amount'] if category['budget_amount'] is not none else '' }}">
         </div>
 
         <!-- Buttons -->
@@ -39,12 +38,13 @@
             <button type="submit" class="btn btn-primary">
                 Save Changes
             </button>
-
             <a href="{{ url_for('category.category') }}"
                class="btn btn-secondary">
                 Cancel
             </a>
         </div>
     </form>
+
 </div>
 {% endblock %}
+
