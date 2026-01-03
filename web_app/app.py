@@ -10,7 +10,7 @@ from routes.analytics import analytics_blueprint
 load_dotenv()
 
 app = Flask(__name__, template_folder='templates', static_folder='static')
-app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
+app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "dev-secret-key")
 
 app.register_blueprint(main_blueprint)
 app.register_blueprint(auth_blueprint)

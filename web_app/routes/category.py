@@ -97,6 +97,7 @@ def edit_category(category_id):
             flash("Category name is required.", "danger")
             return redirect(url_for("category.edit_category", category_id=category_id))
 
+
         try:
             resp = requests.put(
                 f"{CATEGORY_SERVICE_URL}/category/{category_id}",
