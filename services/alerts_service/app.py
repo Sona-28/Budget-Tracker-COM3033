@@ -1,5 +1,6 @@
-from flask import Flask, jsonify, request
+from flask import Flask
 from views import alerts_api
+
 
 
 app = Flask(__name__)

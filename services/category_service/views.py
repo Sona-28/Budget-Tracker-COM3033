@@ -64,6 +64,7 @@ def get_category(category_id):
     return jsonify({
         "id": category.id,
         "name": category.name,
+        "budget_amount": float(category.budget_amount) if category.budget_amount else None,
         "user_id": category.user_id
     }), 200
 

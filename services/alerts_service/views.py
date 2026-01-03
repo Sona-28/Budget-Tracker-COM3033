@@ -9,6 +9,8 @@ load_dotenv()
 alerts_api = Blueprint('alerts_api', __name__)
 
 AUTH_SERVICE_URL = os.getenv("AUTH_SERVICE_URL", "http://localhost:5001")
+TRANSACTION_SERVICE_URL = os.getenv("TRANSACTION_SERVICE_URL", "http://localhost:5002")
+CATEGORY_SERVICE_URL = os.getenv("CATEGORY_SERVICE_URL", "http://localhost:5003")
 
 @alerts_api.get("/health")
 def health():
@@ -17,64 +19,72 @@ def health():
 
 @alerts_api.post("/alerts/overspend")
 def overspend():
-    data = request.json
-    user_id = data.get("user_id")
-    category = data.get("category")
-    amount = data.get("amount")
-    budget = data.get("budget")
-
+    user_id = request.headers.get("X-User-Id")
+    category_id = request.json.get("category_id")
+    date = request.json.get("date")
+    if not user_id or not category_id or not date:
+        return jsonify(error="Missing required parameters"), 400
+    #Fetch category details
     try:
-        resp = requests.get(f"{AUTH_SERVICE_URL}/users/{user_id}", timeout=5)
+        resp = requests.get(
+            f"{CATEGORY_SERVICE_URL}/category/{category_id}",
+            params={"user_id": user_id},
+            timeout=5
+        )
         resp.raise_for_status()
-        user = resp.json()
+        category_data = resp.json()
+        budget_amount = category_data.get("budget_amount")
+        if budget_amount is None:
+            return jsonify(message="No budget set for this category"), 200
+        else:
+            category_name = category_data.get("name")
     except requests.RequestException:
-        return jsonify(message="Could not fetch user info"), 500
-    receive_email = user.get("receive_email")
-    if not receive_email:
-        return jsonify(message="User has opted out of email notifications"), 200
-    user_email = user.get("email")
-    name = user.get("firstname") + " " + user.get("lastname")
-
-    if not user_email:
-        return jsonify(message="Missing user_email"), 400
-
-    subject = f"Overspend Alert: {category}"
-    body = f"Dear {name}, you have spent {amount} on {category}, exceeding your threshold of {budget}."
-
-    success = send_email(user_email, subject, body)
-    if success:
-        return jsonify(message="Overspend alert sent successfully")
-    else:
-        return jsonify(message="Failed to send email"), 500
-
-
-@alerts_api.post("/alerts/reward")
-def reward():
-    data = request.json
-    user_id = data.get("user_id")
-    reward_type = data.get("points")
-
+        return jsonify(error="Failed to fetch category details"), 503
+    #Fetch total spent in category
     try:
-        resp = requests.get(f"{AUTH_SERVICE_URL}/users/{user_id}", timeout=5)
+        resp = requests.get(
+            f"{TRANSACTION_SERVICE_URL}/api/v1/transactions/analytics/by-category",
+            headers={"X-User-Id": user_id},
+            timeout=5
+        )
         resp.raise_for_status()
-        user = resp.json()
+        by_category = resp.json()
+        for record in by_category:
+            if record["category"] == category_name:
+                total_spent = record["total"]
+                break
+        else:
+            total_spent = 0
     except requests.RequestException:
-        return jsonify(message="Could not fetch user info"), 500
-    receive_email = user.get("receive_email")
-    if not receive_email:
-        return jsonify(message="User has opted out of email notifications"), 200
-    user_email = user.get("email")
-    name = user.get("firstname") + " " + user.get("lastname")
-    if not user_email or not reward_type:
-        return jsonify(message="Missing user_email or reward_type"), 400
-
-    subject = "You've earned a reward!"
-    body = f"Congratulations! {name}, you have earned: {reward_type}"
-
-    success = send_email(user_email, subject, body)
-    if success:
-        return jsonify(message="Reward email sent successfully")
-    else:
-        return jsonify(message="Failed to send email"), 500
-
-
+        return jsonify(error="Failed to connect to transaction service"), 503
+    #Check overspend
+    if total_spent > budget_amount:
+        #Fetch user email
+        try:
+            resp = requests.get(
+                f"{AUTH_SERVICE_URL}/users/{user_id}",
+                timeout=5
+            )
+            resp.raise_for_status()
+            user_data = resp.json()
+            user_email = user_data.get("email")
+            user_name = user_data.get("firstname") + " " + user_data.get("lastname")
+            if not user_email:
+                return jsonify(error="User email not found"), 404
+        except requests.RequestException:
+            return jsonify(error="Failed to fetch user details"), 503
+        #Send email alert
+        subject = f"Overspend Alert: {category_name} Budget Exceeded"
+        body = (
+            f"Dear {user_name},\n\n"
+            f"You have exceeded your budget for the category '{category_name}'.\n"
+            f"Budget Amount: {budget_amount}\n"
+            f"Total Spent: {total_spent}\n\n"
+            f"Please review your expenses.\n\n"
+            f"Best regards,\n"
+            f"WALL-ET Team"
+        )
+        send_email(user_email, subject, body)
+        return jsonify(message="Overspend alert sent"), 200
+    return jsonify(message="No overspend detected"), 200
+    

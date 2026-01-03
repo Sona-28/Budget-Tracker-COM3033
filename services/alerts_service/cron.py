@@ -1,27 +1,84 @@
 #!/usr/bin/env python3
 from datetime import datetime
+import os
+import requests
+from dotenv import load_dotenv
 
-from services.alerts_service.utils import send_monthly_summary
+load_dotenv()
 
-# TODO: Fetch summaries from database or analytics service
-summaries = []  # List of dicts: {"email": "", "name": "", "total_spent": 0, "top_category": "", "budget_status": ""}
+AUTH_SERVICE_URL = os.getenv("AUTH_SERVICE_URL", "http://localhost:5001")
+TRANSACTION_SERVICE_URL = os.getenv("TRANSACTION_SERVICE_URL", "http://localhost:5002")
+POINTS_SERVICE_URL = os.getenv("POINTS_SERVICE_URL", "http://localhost:5004")
 
-def monthly_summary_cron():
-    month = datetime.now().strftime("%B %Y")
+def run_cron_job():
+    today = datetime.now()
+    last_month = today.month - 1 or 12
+    last_year = today.year - 1 if today.month == 1 else today.year
+    total_income = 0
+    total_expense = 0
+    try:
+        headers = {"X-API-Key": os.getenv("INTERNAL_API_KEY")}
+        resp = requests.get(f"{AUTH_SERVICE_URL}/users", headers=headers, timeout=5)
+        resp.raise_for_status()
+        users = resp.json()
+        
+        for user in users:
+            uid = user["id"]
+            user_email = user.get("email") 
+            user_name = user.get("firstname") + " " + user.get("lastname")
+            headers_tx = {"X-User-Id": str(uid)}
+            tx_resp = requests.get(f"{TRANSACTION_SERVICE_URL}/api/v1/transactions/analytics/export", headers=headers_tx, timeout=5)
+            if tx_resp.status_code == 200:
+                transactions = tx_resp.json()
+                category_totals = {}
+                for record in transactions:
+                    tx_date = datetime.fromisoformat(record["date"])
+                    if tx_date.year == last_year and tx_date.month == last_month:
+                        if record["type"] == "income":
+                            total_income += record["amount"]
+                        elif record["type"] == "expense":
+                            total_expense += record["amount"]
+                            category_name = record["category"]
+                            category_totals[category_name] = category_totals.get(category_name, 0) + record["amount"]
+                
+                # Find top category
+                if category_totals:
+                    top_category = max(category_totals, key=category_totals.get)
+                else:
+                    top_category = None
+                
+                # Fetch user points
+                points_resp = requests.get(f"{POINTS_SERVICE_URL}/points/{uid}", timeout=5)
+                if points_resp.status_code == 200:
+                    points_data = points_resp.json()
+                    user_points = points_data.get("total_points", 0)
+                else:
+                    user_points = 0
+                # Send alert email
+                if user_email:
+                    subject = f"Monthly Summary Email for {last_month}/{last_year}"
+                    body = f"""
+Dear {user_name},
 
-    for summary in summaries:
-        success = send_monthly_summary(
-            user_email=summary["email"],
-            name=summary["name"],
-            month=month,
-            total_spent=summary["total_spent"],
-            top_category=summary["top_category"],
-            budget_status=summary["budget_status"]
-        )
-        if success:
-            print(f"Email sent to {summary['email']}")
-        else:
-            print(f"Failed to send email to {summary['email']}")
+Here is your monthly summary for {last_month}/{last_year}:
+
+Total Income: ${total_income:.2f}
+Total Expenses: ${total_expense:.2f}
+Top Spending Category: {top_category or 'None'}
+Current Points: {user_points}
+
+Keep up the good work!
+
+Best,
+WALL-ET Team
+"""
+                    from email_sender import send_email
+                    send_email(user_email, subject, body)
+
+    except Exception as e:
+        print("Error in cron job:", str(e))
 
 if __name__ == "__main__":
-    monthly_summary_cron()
+    run_cron_job()
+
+    
