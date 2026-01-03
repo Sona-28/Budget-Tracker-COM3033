@@ -1,18 +1,11 @@
 from flask import Blueprint, jsonify, request
-from extensions import db
-from models import User
-import jwt
+from services.auth_service.extensions import db
+from services.auth_service.models import User
 import os
-from datetime import datetime, timedelta
 
 auth_api = Blueprint('auth_api', __name__)
 
-# -----------------------------------
-# JWT configuration (must match other services)
-# -----------------------------------
-JWT_SECRET = os.getenv("JWT_SECRET", "super-secret-key")
-JWT_ALGORITHM = "HS256"
-JWT_EXPIRATION_MINUTES = 60
+
 
 
 @auth_api.get("/health")
@@ -31,6 +24,23 @@ def get_user(user_id):
         lastname=user.lastname,
         email=user.email
     ), 200
+
+@auth_api.get("/users")
+def get_all_users():
+    api_key = request.headers.get("X-API-Key")
+    expected_key = os.getenv("INTERNAL_API_KEY")
+    if api_key != expected_key:
+        return jsonify(error="Unauthorized"), 403
+    
+    users = User.query.all()
+    return jsonify([
+        {
+            "id": u.id,
+            "email": u.email,
+            "firstname": u.firstname,
+            "lastname": u.lastname
+        } for u in users
+    ]), 200
 
 
 @auth_api.post("/register")
@@ -72,21 +82,52 @@ def login():
     if not user or not user.check_password(password):
         return jsonify(error="Invalid credentials"), 401
 
-    # -----------------------------------
-    # CREATE JWT
-    # -----------------------------------
-    payload = {
-        "user_id": user.id,
+    return jsonify(message="Login OK", user_id=user.id), 200
+
+@auth_api.get("/users/<int:user_id>")
+def account(user_id):
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify(error="User not found"), 404
+
+    user_data = {
+        "id": user.id,
+        "firstname": user.firstname,
+        "lastname": user.lastname,
         "email": user.email,
-        "exp": datetime.utcnow() + timedelta(minutes=JWT_EXPIRATION_MINUTES),
-        "iat": datetime.utcnow()
+        "phone": user.phone,
+        "receive_email": user.receive_email
     }
 
-    token = jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
+    return jsonify(user=user_data), 200
 
-    return jsonify(
-        message="Login OK",
-        user_id=user.id,
-        access_token=token
-    ), 200
+@auth_api.put("/users/<int:user_id>")
+def update_user(user_id):
+    data = request.get_json() or {}
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify(error="User not found"), 404
 
+    if "firstname" in data:
+        user.firstname = data["firstname"]
+    if "lastname" in data:
+        user.lastname = data["lastname"]
+    if "phone" in data:
+        user.phone = data["phone"]
+    if "receive_email" in data:
+        user.receive_email = data["receive_email"]
+
+    db.session.commit()
+    return jsonify(message="User updated successfully"), 200
+
+@auth_api.post('/change-password')
+def change_password():
+    data = request.json or {}
+    user = User.query.get(data["user_id"])
+    if not user or not user.check_password(data["current_password"]):
+        return {"error": "Current password is incorrect"}, 400
+
+    user.password = data["new_password"]
+    db.session.commit()
+
+    return {"message": "Password updated"}

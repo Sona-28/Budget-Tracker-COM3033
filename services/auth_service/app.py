@@ -1,7 +1,8 @@
 import os
 from flask import Flask
 from dotenv import load_dotenv
-from extensions import db
+from services.auth_service.extensions import db
+from services.auth_service.models import init_db_if_missing
 
 load_dotenv()
 
@@ -14,13 +15,11 @@ def create_app():
     app.config['SQLALCHEMY_ECHO'] = True
 
     db.init_app(app)
+    init_db_if_missing(app)
 
-    from models import User
+    # from services.auth_service import models
+    from services.auth_service.views import auth_api
 
-    with app.app_context():
-        db.create_all()
-
-    from views import auth_api
     app.register_blueprint(auth_api)
 
     return app
