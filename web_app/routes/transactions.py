@@ -14,6 +14,11 @@ TRANSACTION_SERVICE_URL = os.getenv(
     "http://localhost:5002"
 )
 
+ALERTS_SERVICE_URL = os.getenv(
+    "ALERTS_SERVICE_URL",
+    "http://localhost:5005"
+)
+
 CATEGORY_SERVICE_URL = os.getenv(
     "CATEGORY_SERVICE_URL",
     "http://localhost:5003"
@@ -74,6 +79,20 @@ def transaction():
 
         if resp.status_code == 201:
             flash("Transaction added successfully", "success")
+            if payload["type"] == "expense":
+            # Call overspend alert
+                try:
+                    requests.post(
+                        f"{ALERTS_SERVICE_URL}/alerts/overspend",
+                        json={
+                            "category_id": payload["category_id"],
+                            "date": payload["date"]
+                        },
+                        headers=headers,
+                        timeout=5
+                    )
+                except requests.RequestException:
+                    pass # silently ignore alert failures
         else:
             flash("Failed to add transaction", "danger")
 

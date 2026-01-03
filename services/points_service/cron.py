@@ -72,13 +72,7 @@ with app.app_context():
                 points_entry = PointsAccount(user_id=uid, points=total_points, reason="Monthly evaluation")
                 db.session.add(points_entry)
         db.session.commit()
-        message = f"Monthly points evaluation completed for {len(users)} users."
-        print(message)
-        with open("/usr/local/Budget-Tracker-COM3033/points_cron.log", "a") as f:
-            f.write(f"{datetime.now()}: {message}\n")
+        print(f"Monthly points evaluation completed for {len(users)} users.")
     except Exception as e:
-        message = f"Failed: {str(e)}"
-        print(message)
-        with open("/usr/local/Budget-Tracker-COM3033/points_cron.log", "a") as f:
-            f.write(f"{datetime.now()}: {message}\n")
+        print(f"Failed: {str(e)}")
 

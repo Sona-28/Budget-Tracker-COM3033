@@ -1,41 +1,44 @@
 {% extends 'base.html' %}
 
 {% block content %}
+<section class="section">
+    <div class="container">
+        <h1 class="title is-2">Create Category</h1>
 
-<h1 class="title is-1">Create Category</h1>
+        <form method="POST" class="box">
+            {{ form.hidden_tag() }}
 
-<form method="POST">
-    {{ form.hidden_tag() }}
+            <div class="field">
+                <label class="label">Category Name</label>
+                <div class="control">
+                    {{ form.name(class="input", placeholder="e.g. Food") }}
+                </div>
+                {% for error in form.name.errors %}
+                    <p class="help is-danger">{{ error }}</p>
+                {% endfor %}
+            </div>
 
-    <div class="field">
-        <label class="label">Category Name</label>
-        <div class="control">
-            {{ form.name(class="input", placeholder="e.g. Food") }}
-        </div>
-        {% for error in form.name.errors %}
-            <p class="help is-danger">{{ error }}</p>
-        {% endfor %}
+            <div class="field">
+                <label class="label">Monthly Budget (£)</label>
+                <div class="control">
+                    {{ form.budget_amount(class="input", placeholder="Optional") }}
+                </div>
+                {% for error in form.budget_amount.errors %}
+                    <p class="help is-danger">{{ error }}</p>
+                {% endfor %}
+            </div>
+
+            <div class="field">
+                <div class="control">
+                    {{ form.submit(class="button is-primary") }}
+                    <a href="{{ url_for('category.category') }}"
+                       class="button is-light">
+                        Cancel
+                    </a>
+                </div>
+            </div>
+        </form>
     </div>
-
-    <div class="field">
-        <label class="label">Monthly Budget (£)</label>
-        <div class="control">
-            {{ form.budget_amount(class="input", placeholder="Optional") }}
-        </div>
-        {% for error in form.budget_amount.errors %}
-            <p class="help is-danger">{{ error }}</p>
-        {% endfor %}
-    </div>
-
-    <div class="field">
-        <div class="control">
-            {{ form.submit(class="button is-primary") }}
-            <a href="{{ url_for('category.category') }}"
-               class="button is-light">
-                Cancel
-            </a>
-        </div>
-    </div>
-</form>
+</section>
 
 {% endblock %}

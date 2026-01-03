@@ -64,6 +64,7 @@ def get_category(category_id):
     return jsonify({
         "id": category.id,
         "name": category.name,
+        "budget_amount": float(category.budget_amount) if category.budget_amount else None,
         "user_id": category.user_id
     }), 200
 
@@ -112,6 +113,12 @@ def update_category(category_id):
 
     if not category:
         return jsonify({"error": "Category not found"}), 404
+
+    # Check if name already exists for this user (excluding current category)
+    if name != category.name:
+        existing = Category.query.filter_by(name=name, user_id=user_id).first()
+        if existing:
+            return jsonify({"error": "Category name already exists for this user"}), 409
 
     category.name = name
     category.budget_amount = budget_amount
