@@ -3,45 +3,55 @@
 {% block title %}Edit Category{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <h2>Edit Category</h2>
-    <hr>
+<section class="section">
+    <div class="container">
+        <h1 class="title is-2">Edit Category</h1>
 
-    <form method="POST">
-        <!-- Category Name -->
-        <div class="mb-3">
-            <label for="name" class="form-label">Category Name</label>
-            <input
-                type="text"
-                id="name"
-                name="name"
-                class="form-control"
-                value="{{ category.name }}"
-                required
-            >
-            <label class="form-label mt-3">Monthly Budget (£)</label>
-            <input
-                type="number"
-                step="0.01"
-                id="budget_amount"
-                name="budget_amount"
-                class="form-control"
-                value="{{ category.budget_amount }}"
-            >
-        </div>
+        <form method="POST" class="box">
+            <!-- Category Name -->
+            <div class="field">
+                <label for="name" class="label">Category Name</label>
+                <div class="control">
+                    <input
+                        type="text"
+                        id="name"
+                        name="name"
+                        class="input"
+                        value="{{ category.name }}"
+                        required
+                    >
+                </div>
+            </div>
 
-        <!-- Buttons -->
-        <div class="d-flex gap-2">
-            <button type="submit" class="btn btn-primary">
-                Save Changes
-            </button>
+            <!-- Monthly Budget -->
+            <div class="field">
+                <label for="budget_amount" class="label">Monthly Budget (£)</label>
+                <div class="control">
+                    <input
+                        type="number"
+                        step="0.01"
+                        id="budget_amount"
+                        name="budget_amount"
+                        class="input"
+                        value="{{ category.budget_amount }}"
+                    >
+                </div>
+            </div>
 
-            <a href="{{ url_for('category.category') }}"
-               class="btn btn-secondary">
-                Cancel
-            </a>
-        </div>
-    </form>
-</div>
+            <!-- Buttons -->
+            <div class="field">
+                <div class="control">
+                    <button type="submit" class="button is-primary">
+                        Save Changes
+                    </button>
+                    <a href="{{ url_for('category.category') }}"
+                       class="button is-light ml-2">
+                        Cancel
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+</section>
 {% endblock %}
 
