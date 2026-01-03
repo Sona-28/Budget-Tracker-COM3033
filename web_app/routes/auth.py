@@ -82,7 +82,7 @@ def login():
             session["user_id"] = data.get("user_id")
             session["user_email"] = payload["email"]
             flash("Login successful.", "success")
-            return redirect(url_for('auth.account'))
+            return redirect(url_for('analytics.analytics'))
         else:
             error_msg = data.get("error", "Login failed.")
             flash(error_msg, "danger")
