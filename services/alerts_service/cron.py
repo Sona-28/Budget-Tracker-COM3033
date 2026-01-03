@@ -3,6 +3,7 @@ from datetime import datetime
 import os
 import requests
 from dotenv import load_dotenv
+from app import create_app
 
 load_dotenv()
 
@@ -79,6 +80,8 @@ WALL-ET Team
         print("Error in cron job:", str(e))
 
 if __name__ == "__main__":
-    run_cron_job()
+    app = create_app()
+    with app.app_context():
+        run_cron_job()
 
     

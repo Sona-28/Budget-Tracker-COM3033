@@ -1,11 +1,11 @@
 from flask import Flask
 from views import alerts_api
 
-
-
-app = Flask(__name__)
-app.register_blueprint(alerts_api)
-
+def create_app():
+    app = Flask(__name__)
+    app.register_blueprint(alerts_api)
+    return app
 
 if __name__ == "__main__":
+    app = create_app()
     app.run(port=5005, debug=True)
