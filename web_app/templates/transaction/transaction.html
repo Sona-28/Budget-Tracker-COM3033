@@ -19,7 +19,7 @@
     <div class="field">
         <div class="select is-fullwidth">
             <select name="category_id" required>
-                <option value="">Select category</option>
+                <option value="" disabled selected>Select Category</option>
                 {% for c in categories %}
                     <option value="{{ c.id }}">{{ c.name }}</option>
                 {% endfor %}
@@ -37,7 +37,8 @@
 
     <div class="field">
         <div class="select is-fullwidth">
-            <select name="type">
+            <select name="type" required>
+                <option value="" disabled selected>Select Type</option>
                 <option value="expense">Expense</option>
                 <option value="income">Income</option>
             </select>
@@ -63,7 +64,7 @@
         {% for tx in transactions %}
         <tr>
             <td>{{ tx.title }}</td>
-            <td>{{ tx.amount }}</td>
+            <td>£{{ "%.2f"|format(tx.amount) }}</td>
             <td>{{ tx.category.name if tx.category else "Uncategorised" }}</td>
             <td>{{ tx.type }}</td>
             <td>{{ tx.date[:16] }}</td>
