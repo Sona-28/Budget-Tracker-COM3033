@@ -20,6 +20,10 @@ def create_app():
 
     db.init_app(app)
 
+    # Initialize the database
+    with app.app_context():
+        db.create_all()
+
     app.register_blueprint(category_api)
     return app
 
