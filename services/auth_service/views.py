@@ -5,6 +5,9 @@ import os
 
 auth_api = Blueprint('auth_api', __name__)
 
+
+
+
 @auth_api.get("/health")
 def health():
     return jsonify(service="auth", status="ok")
@@ -48,12 +51,9 @@ def register():
     if not all(data.get(f) for f in required):
         return jsonify(error="Missing required fields"), 400
 
-    # query: does a user with this email already exist?
     existing = User.query.filter_by(email=data["email"]).first()
-
     if existing:
-        return jsonify(error="Email already registered"), 409  # conflict
-
+        return jsonify(error="Email already registered"), 409
 
     user = User(
         firstname=data["firstname"],

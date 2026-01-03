@@ -3,9 +3,8 @@ from sqlalchemy import inspect
 import bcrypt
 
 
-
 class User(db.Model):
-    __tablename__ = 'users'
+    __tablename__ = "users"
 
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(100), nullable=False, unique=True)
@@ -33,7 +32,6 @@ class User(db.Model):
         self._password = hashed.decode("utf-8")
 
     def check_password(self, password_plain: str) -> bool:
-        """Return True if the given plaintext password matches the stored hash."""
         return bcrypt.checkpw(
             password_plain.encode("utf-8"),
             self.password.encode("utf-8")
