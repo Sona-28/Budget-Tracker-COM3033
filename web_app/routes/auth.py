@@ -1,7 +1,7 @@
 import os
 import requests
 from flask import Blueprint, render_template, redirect, request, session, url_for, flash
-from forms.auth_forms import RegisterForm, LoginForm, ProfileForm, ChangePasswordForm
+from web_app.forms.auth_forms import RegisterForm, LoginForm, ProfileForm, ChangePasswordForm
 
 auth_blueprint = Blueprint('auth', __name__, template_folder='../templates')
 

@@ -1,4 +1,5 @@
-from extensions import db
+from services.auth_service.extensions import db
+from sqlalchemy import inspect
 import bcrypt
 
 
@@ -42,3 +43,10 @@ def init_db(app):
     with app.app_context():
         db.drop_all()
         db.create_all()
+
+
+def init_db_if_missing(app):
+    with app.app_context():
+        inspector = inspect(db.engine)
+        if not inspector.has_table("users"):
+            db.create_all()
