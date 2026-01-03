@@ -1,7 +1,112 @@
 {% extends 'base.html' %}
 
-{% block content %}
-    
-    <h1 class="title is-1">Analytics</h1>
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='analytics.css') }}">
+{% endblock %}
 
+{% block content %}
+<div class="analytics-page">
+    <div class="analytics-shell">
+        <div class="analytics-header">
+            <div class="analytics-title">
+                <p class="eyebrow">Analytics</p>
+                <h1 class="title is-2 analytics-heading">Spending at a glance</h1>
+                <p class="analytics-subtitle">
+                    Track where your money goes and how your habits shift through the month.
+                </p>
+            </div>
+            <div class="kpi-card">
+                <p class="kpi-label">Total savings</p>
+                <p class="kpi-value" id="savingsValue">$0.00</p>
+                <div class="kpi-meta">
+                    <span>Income <strong id="incomeValue">$0.00</strong></span>
+                    <span>Expense <strong id="expenseValue">$0.00</strong></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="analytics-grid">
+            <div class="analytics-panel span-12">
+                <div class="panel-header">
+                    <div>
+                        <h2 class="panel-title">Budget pacing</h2>
+                        <p class="panel-subtitle">See how each category tracks against its budget.</p>
+                    </div>
+                    <div class="panel-badge">Budgets</div>
+                </div>
+                <div class="budget-wrap">
+                    <div class="budget-list" id="budgetList"></div>
+                    <div class="budget-empty" id="budgetEmpty">No category budgets set yet.</div>
+                </div>
+            </div>
+
+            <div class="analytics-panel span-7">
+                <div class="panel-header">
+                    <div>
+                        <h2 class="panel-title">Spending by category</h2>
+                        <p class="panel-subtitle">Tap a bar to filter the timeline.</p>
+                    </div>
+                    <div class="panel-badge">Expenses only</div>
+                </div>
+                <div class="chart-wrap">
+                    <canvas id="barChart"></canvas>
+                    <div class="chart-empty" id="barEmpty">No expense data yet.</div>
+                </div>
+            </div>
+
+            <div class="analytics-panel span-5">
+                <div class="panel-header">
+                    <div>
+                        <h2 class="panel-title">Expense share</h2>
+                        <p class="panel-subtitle">How categories stack up.</p>
+                    </div>
+                </div>
+                <div class="chart-wrap">
+                    <canvas id="expensePie"></canvas>
+                    <div class="chart-empty" id="expensePieEmpty">No expense data yet.</div>
+                </div>
+            </div>
+
+            <div class="analytics-panel span-7">
+                <div class="panel-header">
+                    <div>
+                        <h2 class="panel-title">Transactions over time</h2>
+                        <p class="panel-subtitle">Daily totals for the selected month.</p>
+                    </div>
+                    <div class="panel-controls">
+                        <label class="control-label" for="monthSelect">Month</label>
+                        <div class="select-wrap">
+                            <select id="monthSelect" class="analytics-select"></select>
+                        </div>
+                    </div>
+                </div>
+                <div class="filter-row">
+                    <span class="category-chip" id="selectedCategory">All categories</span>
+                    <button class="clear-filter" id="clearCategory" type="button">Clear filter</button>
+                </div>
+                <div class="chart-wrap chart-tall">
+                    <canvas id="lineChart"></canvas>
+                    <div class="chart-empty" id="lineEmpty">No transactions for this view.</div>
+                </div>
+            </div>
+
+            <div class="analytics-panel span-5">
+                <div class="panel-header">
+                    <div>
+                        <h2 class="panel-title">Income vs expense</h2>
+                        <p class="panel-subtitle">Balance of inflows and outflows.</p>
+                    </div>
+                </div>
+                <div class="chart-wrap">
+                    <canvas id="incomeExpensePie"></canvas>
+                    <div class="chart-empty" id="incomeExpenseEmpty">No income or expense data yet.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script id="analytics-data" type="application/json">{{ analytics_data | tojson }}</script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="{{ url_for('static', filename='analytics.js') }}"></script>
 {% endblock %}

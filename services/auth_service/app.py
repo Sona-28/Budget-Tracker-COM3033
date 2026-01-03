@@ -1,7 +1,8 @@
 import os
 from flask import Flask
 from dotenv import load_dotenv
-from extensions import db
+from services.auth_service.extensions import db
+from services.auth_service.models import init_db_if_missing
 
 load_dotenv()
 
@@ -16,9 +17,10 @@ def create_app():
 
     
     db.init_app(app)
+    init_db_if_missing(app)
 
     # from services.auth_service import models
-    from views import auth_api
+    from services.auth_service.views import auth_api
 
     app.register_blueprint(auth_api)
     return app

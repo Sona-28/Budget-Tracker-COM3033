@@ -5,7 +5,12 @@
   <div class="container">
 
     <h1 class="title is-1 has-text-centered mb-6">Profile</h1>
-
+    {% block points %}
+    <div class="box has-text-centered mb-6">
+        <h2 class="subtitle">Your Total Points</h2>
+        <p class="is-size-1 has-text-primary">{{ total_points }}</p>
+    </div>
+    {% endblock %}
     <div class="columns is-variable is-8">
 
       <!-- Profile Card -->
@@ -95,6 +100,7 @@
       </div>
 
     </div>
+
 
     <!-- Change Password -->
     <div class="section mt-6">

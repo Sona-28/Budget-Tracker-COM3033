@@ -1,19 +1,24 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, request, jsonify
+from models import PointsAccount
+from extensions import db
+import os
+import requests
 
-points_api = Blueprint('points_api', __name__)
-
+points_api = Blueprint("points_api", __name__)
 
 @points_api.get("/health")
 def health():
     return jsonify(service="points", status="ok")
 
 
-@points_api.get("/points/<user_id>")
-def get_points(user_id):
-    return jsonify(points=0, badge=None)
+@points_api.get("/points/<int:user_id>")
+def get_total_points(user_id):
+    total_points = db.session.query(
+        db.func.coalesce(db.func.sum(PointsAccount.points), 0)
+    ).filter(PointsAccount.user_id == user_id).scalar()
 
+    return jsonify({
+        "user_id": user_id,
+        "total_points": total_points
+    })
 
-@points_api.post("/points/monthly-run")
-def monthly_run():
-    # cron-like trigger later; for now just a stub
-    return jsonify(message="monthly points calc stub")
