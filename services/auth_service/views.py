@@ -19,6 +19,19 @@ JWT_EXPIRATION_MINUTES = 60
 def health():
     return jsonify(service="auth", status="ok")
 
+@auth_api.get("/users/<int:user_id>")
+def get_user(user_id):
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify(error="User not found"), 404
+
+    return jsonify(
+        id=user.id,
+        firstname=user.firstname,
+        lastname=user.lastname,
+        email=user.email
+    ), 200
+
 
 @auth_api.post("/register")
 def register():

@@ -107,8 +107,7 @@ def login():
                 return render_template('auth/login.html', form=form)
 
             flash("Login successful.", "success")
-            return redirect(url_for('auth.account'))
-
+            return redirect(url_for('analytics.analytics'))
         else:
             error_msg = data.get("error", "Login failed.")
             flash(error_msg, "danger")

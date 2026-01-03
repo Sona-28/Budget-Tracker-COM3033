@@ -2,6 +2,7 @@
 import subprocess
 import sys
 import time
+import os
 
 SERVICES = [
     ("Auth Service",         "services/auth_service",          5001),
@@ -13,6 +14,9 @@ SERVICES = [
     ("Web App (UI)",         "web_app",                        5000),
 ]
 
+env = os.environ.copy()
+env["PYTHONPATH"] = os.getcwd()
+
 def main():
     print("Starting Budget Tracker Microservices…")
     print("=" * 60)
@@ -20,10 +24,7 @@ def main():
     processes = []
     for name, path, port in SERVICES:
         print(f"Starting {name} on port {port}…")
-        if name == "Web App (UI)":
-            p = subprocess.Popen([sys.executable, "-m", "web_app.app"], cwd=".")
-        else:
-            p = subprocess.Popen([sys.executable, "app.py"], cwd=path)
+        p = subprocess.Popen([sys.executable, "app.py"], cwd=path, env=env)
         processes.append((name, p, port))
         time.sleep(0.3)
 
