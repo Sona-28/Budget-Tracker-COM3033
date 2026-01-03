@@ -91,20 +91,6 @@ def login():
             session["user_id"] = data.get("user_id")
             session["user_email"] = payload["email"]
 
-            # Store JWT (support common key names)
-            session["access_token"] = (
-                data.get("access_token")
-                or data.get("token")
-                or data.get("jwt")
-            )
-
-            # Safety check
-            if not session.get("access_token"):
-                flash(
-                    "Login succeeded but no access token was returned.",
-                    "danger"
-                )
-                return render_template('auth/login.html', form=form)
 
             flash("Login successful.", "success")
             return redirect(url_for('analytics.analytics'))

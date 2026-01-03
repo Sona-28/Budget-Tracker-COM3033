@@ -56,6 +56,10 @@ def create_category():
             flash("Category name is required.", "danger")
             return redirect(url_for("category.create_category"))
 
+        # Convert empty string to None
+        if budget_amount == '':
+            budget_amount = None
+
         try:
             resp = requests.post(
                 f"{CATEGORY_SERVICE_URL}/category",
@@ -97,6 +101,9 @@ def edit_category(category_id):
             flash("Category name is required.", "danger")
             return redirect(url_for("category.edit_category", category_id=category_id))
 
+        # Convert empty string to None
+        if budget_amount == '':
+            budget_amount = None
 
         try:
             resp = requests.put(

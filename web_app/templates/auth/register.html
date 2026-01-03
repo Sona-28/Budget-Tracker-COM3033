@@ -7,9 +7,13 @@
     {{ form.lastname(class="input", placeholder="Last name") }}
     {{ form.email(class="input", placeholder="Email") }}
     {{ form.phone(class="input", placeholder="Phone (optional)") }}
+    {% if form.phone.errors %}
     {{ form.phone.errors }}
+    {% endif %}
     {{ form.password(class="input", placeholder="Password") }}
+    {% if form.password.errors %}
     {{ form.password.errors }}
+    {% endif %}
     {{ form.confirm_password(class="input", placeholder="Confirm Password") }}
     {{ form.submit(class="button") }}
 </form>

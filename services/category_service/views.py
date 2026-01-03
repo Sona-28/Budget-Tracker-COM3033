@@ -75,9 +75,12 @@ def create_category():
     name = data.get("name")
     budget_amount = data.get("budget_amount")
     user_id = data.get("user_id")
-    print(data)
     if not name or not user_id:
         return jsonify({"error": "name and user_id are required"}), 400
+
+    # Convert empty string to None for budget_amount
+    if budget_amount == '':
+        budget_amount = None
 
     # Check if category name already exists for this user
     existing = Category.query.filter_by(name=name, user_id=user_id).first()
@@ -105,6 +108,10 @@ def update_category(category_id):
 
     if not name or not user_id:
         return jsonify({"error": "name and user_id are required"}), 400
+
+    # Convert empty string to None for budget_amount
+    if budget_amount == '':
+        budget_amount = None
 
     category = Category.query.filter_by(
         id=category_id,
