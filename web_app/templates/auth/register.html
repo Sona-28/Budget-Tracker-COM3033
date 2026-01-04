@@ -1,21 +1,113 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<form method="POST">
-    {{ form.hidden_tag() }}
-    {{ form.firstname(class="input", placeholder="First name") }}
-    {{ form.lastname(class="input", placeholder="Last name") }}
-    {{ form.email(class="input", placeholder="Email") }}
-    {{ form.phone(class="input", placeholder="Phone (optional)") }}
-    {% if form.phone.errors %}
-    {{ form.phone.errors }}
-    {% endif %}
-    {{ form.password(class="input", placeholder="Password") }}
-    {% if form.password.errors %}
-    {{ form.password.errors }}
-    {% endif %}
-    {{ form.confirm_password(class="input", placeholder="Confirm Password") }}
-    {{ form.submit(class="button") }}
-</form>
+<section class="section">
+  <div class="container">
+    <div class="columns is-centered">
+      <div class="column is-6">
+        <div class="card">
+          <div class="card-content">
+            <h1 class="title has-text-centered mb-5">Register</h1>
 
+            <form method="POST">
+              {{ form.hidden_tag() }}
+
+              <div class="field is-horizontal">
+                <div class="field-label is-normal">
+                  <label class="label">First Name</label>
+                </div>
+                <div class="field-body">
+                  <div class="field">
+                    <div class="control">
+                      {{ form.firstname(class="input", placeholder="Enter your first name") }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="field is-horizontal">
+                <div class="field-label is-normal">
+                  <label class="label">Last Name</label>
+                </div>
+                <div class="field-body">
+                  <div class="field">
+                    <div class="control">
+                      {{ form.lastname(class="input", placeholder="Enter your last name") }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="field is-horizontal">
+                <div class="field-label is-normal">
+                  <label class="label">Email</label>
+                </div>
+                <div class="field-body">
+                  <div class="field">
+                    <div class="control">
+                      {{ form.email(class="input", placeholder="Enter your email") }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="field is-horizontal">
+                <div class="field-label is-normal">
+                  <label class="label">Phone (Optional)</label>
+                </div>
+                <div class="field-body">
+                  <div class="field">
+                    <div class="control">
+                      {{ form.phone(class="input", placeholder="Enter your phone number") }}
+                    </div>
+                    {% if form.phone.errors %}
+                    <p class="help is-danger">{{ form.phone.errors[0] }}</p>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+
+              <div class="field is-horizontal">
+                <div class="field-label is-normal">
+                  <label class="label">Password</label>
+                </div>
+                <div class="field-body">
+                  <div class="field">
+                    <div class="control">
+                      {{ form.password(class="input", type="password", placeholder="Enter your password") }}
+                    </div>
+                    {% if form.password.errors %}
+                    <p class="help is-danger">{{ form.password.errors[0] }}</p>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+
+              <div class="field is-horizontal">
+                <div class="field-label is-normal">
+                  <label class="label">Confirm Password</label>
+                </div>
+                <div class="field-body">
+                  <div class="field">
+                    <div class="control">
+                      {{ form.confirm_password(class="input", type="password", placeholder="Confirm your password") }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="field">
+                <div class="control">
+                  {{ form.submit(class="button is-primary is-fullwidth") }}
+                </div>
+              </div>
+
+            </form>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 {% endblock %}
