@@ -21,7 +21,7 @@
             <div class="field">
                 <label class="label">Monthly Budget (£)</label>
                 <div class="control">
-                    {{ form.budget_amount(class="input", placeholder="Optional") }}
+                    {{ form.budget_amount(class="input", placeholder="Optional", min="0.01") }}
                 </div>
                 {% for error in form.budget_amount.errors %}
                     <p class="help is-danger">{{ error }}</p>
