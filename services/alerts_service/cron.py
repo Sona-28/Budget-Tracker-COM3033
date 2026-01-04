@@ -24,6 +24,8 @@ def run_cron_job():
         users = resp.json()
         
         for user in users:
+            if user["receive_email"] is False:
+                continue
             uid = user["id"]
             user_email = user.get("email") 
             user_name = user.get("firstname") + " " + user.get("lastname")

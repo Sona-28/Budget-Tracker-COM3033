@@ -38,7 +38,8 @@ def get_all_users():
             "id": u.id,
             "email": u.email,
             "firstname": u.firstname,
-            "lastname": u.lastname
+            "lastname": u.lastname,
+            "receive_email": u.receive_email
         } for u in users
     ]), 200
 
