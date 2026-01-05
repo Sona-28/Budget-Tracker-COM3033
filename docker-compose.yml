@@ -1,0 +1,96 @@
+version: "3.9"
+ 
+services:
+ 
+  auth_service:
+    build: .
+    container_name: auth_service
+    command: gunicorn -b 0.0.0.0:5001 services.auth_service.app:app
+    env_file: .env
+    ports:
+      - "5001:5001"
+    restart: always
+ 
+  transaction_service:
+    build: .
+    container_name: transaction_service
+    command: gunicorn -k uvicorn.workers.UvicornWorker -b 0.0.0.0:5002 services.transaction_service.app:app
+    env_file: .env
+    ports:
+      - "5002:5002"
+    restart: always
+ 
+  category_service:
+    build: .
+    container_name: category_service
+    command: gunicorn -b 0.0.0.0:5003 services.category_service.app:app
+    env_file: .env
+    ports:
+      - "5003:5003"
+    restart: always
+ 
+  analytics_service:
+    build: .
+    container_name: analytics_service
+    command: gunicorn -b 0.0.0.0:5004 services.analytics_service.app:app
+    env_file: .env
+    ports:
+      - "5004:5004"
+    restart: always
+ 
+  alerts_service:
+    build: .
+    container_name: alerts_service
+    command: gunicorn -b 0.0.0.0:5005 services.alerts_service.app:app
+    env_file: .env
+    ports:
+      - "5005:5005"
+    restart: always
+ 
+  points_service:
+    build: .
+    container_name: points_service
+    command: gunicorn -b 0.0.0.0:5006 services.points_service.app:app
+    env_file: .env
+    ports:
+      - "5006:5006"
+    restart: always
+ 
+  web_app:
+    build: .
+    container_name: web_app
+    command: gunicorn -b 0.0.0.0:5000 web_app.app:app
+    env_file: .env
+    ports:
+      - "5000:5000"
+    depends_on:
+      - auth_service
+      - transaction_service
+      - category_service
+    restart: always
+ 
+  # ---------- CRON WORKERS (MONTHLY) ----------
+ 
+  alerts_cron:
+    build: .
+    container_name: alerts_cron
+    command: >
+      sh -c "
+      while true; do
+        python services/alerts_service/cron.py;
+        sleep 2678400;
+      done"
+    env_file: .env
+    restart: always
+ 
+  points_cron:
+    build: .
+    container_name: points_cron
+    command: >
+      sh -c "
+      while true; do
+        python services/points_service/cron.py;
+        sleep 2678400;
+      done"
+    env_file: .env
+    restart: always
