@@ -1,4 +1,4 @@
-from extensions import db
+from services.category_service.extensions import db
 
 class Category(db.Model):
     __tablename__ = "categories"

@@ -1,4 +1,4 @@
-from email_sender import send_email
+from services.alerts_service.email_sender import send_email
 
 def send_monthly_summary(user_email, name, month, total_spent, top_category, budget_status):
     subject = f"Your Monthly Spending Summary – {month}"

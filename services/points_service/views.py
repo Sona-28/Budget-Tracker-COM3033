@@ -1,8 +1,6 @@
 from flask import Blueprint, request, jsonify
-from models import PointsAccount
-from extensions import db
-import os
-import requests
+from services.points_service.models import PointsAccount
+from services.points_service.extensions import db
 
 points_api = Blueprint("points_api", __name__)
 

@@ -1,8 +1,8 @@
 import os
 from flask import Flask, request, jsonify, Blueprint
 from flask_sqlalchemy import SQLAlchemy
-from models import Category
-from extensions import db
+from services.category_service.models import Category
+from services.category_service.extensions import db
 
 category_api = Blueprint("category_api", __name__)
 

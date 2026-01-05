@@ -1,6 +1,6 @@
 from flask import Flask
 from dotenv import load_dotenv
-from views import analytics_api
+from services.analytics_service.views import analytics_api
 
 
 load_dotenv()

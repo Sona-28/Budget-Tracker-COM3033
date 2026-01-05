@@ -2,9 +2,9 @@ from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from dotenv import load_dotenv
 import os
-from models import Category
-from views import category_api
-from extensions import db
+from services.category_service.models import Category
+from services.category_service.views import category_api
+from services.category_service.extensions import db
 
 # Load .env from project root
 load_dotenv()

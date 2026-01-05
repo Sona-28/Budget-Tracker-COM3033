@@ -3,7 +3,7 @@ from datetime import datetime
 import os
 import requests
 from dotenv import load_dotenv
-from app import create_app
+from services.alerts_service.app import create_app
 
 load_dotenv()
 

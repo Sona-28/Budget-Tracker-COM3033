@@ -1,7 +1,6 @@
 from flask import Blueprint, jsonify, request
-from models import Category
-from extensions import db
-from decimal import Decimal
+from services.category_service.models import Category
+from services.category_service.extensions import db
 
 category_blueprint = Blueprint("category", __name__)
 

@@ -1,8 +1,8 @@
 from flask import Flask
-from views import points_api
+from services.points_service.views import points_api
 import os
 from dotenv import load_dotenv
-from extensions import db
+from services.points_service.extensions import db
 
 load_dotenv()
 
@@ -26,4 +26,5 @@ def create_app():
 app = create_app()
 
 if __name__ == "__main__":
+    
     app.run(port=5006, debug=True)

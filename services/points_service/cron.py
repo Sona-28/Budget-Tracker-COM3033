@@ -2,10 +2,10 @@
 import os
 import requests
 from datetime import datetime, timedelta
-from app import create_app
+from services.points_service.app import create_app
 from dotenv import load_dotenv
-from models import PointsAccount
-from extensions import db
+from services.points_service.models import PointsAccount
+from services.points_service.extensions import db
 from collections import defaultdict
 
 load_dotenv()

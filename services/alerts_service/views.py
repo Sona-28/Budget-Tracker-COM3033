@@ -1,6 +1,6 @@
 import requests
 from flask import Blueprint, jsonify, request
-from email_sender import send_email  
+from services.alerts_service.email_sender import send_email  
 import os
 from dotenv import load_dotenv
 

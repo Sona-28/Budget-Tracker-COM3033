@@ -1,4 +1,4 @@
-from extensions import db
+from services.points_service.extensions import db
 
 class PointsAccount(db.Model):
     __tablename__ = 'points'

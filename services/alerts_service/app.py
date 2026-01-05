@@ -1,5 +1,5 @@
 from flask import Flask
-from views import alerts_api
+from services.alerts_service.views import alerts_api
 
 def create_app():
     app = Flask(__name__)
