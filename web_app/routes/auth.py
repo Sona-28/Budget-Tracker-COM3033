@@ -146,7 +146,6 @@ def account():
         form.phone.data = user.get("phone")
         form.receive_email.data = user.get("receive_email")
 
-
     if form.validate_on_submit():
         print("In POST method")
         payload = {

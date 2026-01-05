@@ -22,7 +22,9 @@ def get_user(user_id):
         id=user.id,
         firstname=user.firstname,
         lastname=user.lastname,
-        email=user.email
+        email=user.email,
+        receive_email=user.receive_email,
+        phone=user.phone
     ), 200
 
 @auth_api.get("/users")
