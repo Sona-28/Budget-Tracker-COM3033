@@ -109,7 +109,7 @@ git clone https://github.com/Sona-28/Budget-Tracker-COM3033.git
 ```bash
 docker-compose up -d --build
 ```
-5. Once all services are running, open the application in a browser.
+5. Once all services are running, open the application in a browser: [Link text](http://group1.com3033.csee-systems.com:5000)
 6. To stop the application, use:
 
 ```bash
