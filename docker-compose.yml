@@ -76,6 +76,7 @@ services:
     container_name: alerts_cron
     command: >
       sh -c "
+      export PYTHONPATH=/app &&
       while true; do
         python services/alerts_service/cron.py;
         sleep 2678400;
@@ -88,6 +89,7 @@ services:
     container_name: points_cron
     command: >
       sh -c "
+      export PYTHONPATH=/app &&
       while true; do
         python services/points_service/cron.py;
         sleep 2678400;
