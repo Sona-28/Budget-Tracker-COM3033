@@ -9,6 +9,7 @@ an independent service. This approach improves modularity, scalability, and main
 The application includes a Flask-based web user interface that communicates with multiple backend services via HTTP APIs. 
 Each service focuses on a specific area of the system’s functionality, such as authentication, transactions, analytics, 
 alerts, or points management.
+
 ---
 
 ## Key Features
