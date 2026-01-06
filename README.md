@@ -100,9 +100,9 @@ Docker Compose automatically builds and runs all services together in a consiste
 
 1. Ensure Docker and Docker Compose are installed.
 2. git clone the repo:
-   ```bash
-   git clone https://github.com/Sona-28/Budget-Tracker-COM3033.git
-   ```
+```bash
+git clone https://github.com/Sona-28/Budget-Tracker-COM3033.git
+```
 3. Navigate to the project root directory.
 4. Run the following command:
 
